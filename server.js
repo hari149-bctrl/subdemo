@@ -15,21 +15,24 @@ app.get('/', (req, res) => {
 
 // Webhook Verification (GET)
 app.get('/webhook', (req, res) => {
-  const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
-
-  const mode = req.query['hub.mode'];
-  const token = req.query['hub.verify_token'];
-  const challenge = req.query['hub.challenge'];
-
-  if (mode && token) {
-    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-      console.log('🔗 Webhook verified successfully');
-      res.status(200).send(challenge);
+    const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+  
+    const mode = req.query['hub.mode'];
+    const token = req.query['hub.verify_token'];
+    const challenge = req.query['hub.challenge'];
+  
+    if (mode && token) {
+      if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+        console.log('🔗 Webhook verified successfully');
+        return res.status(200).send(challenge);  // Add return
+      } else {
+        return res.sendStatus(403); // Add return to ensure response ends
+      }
     } else {
-      res.sendStatus(403);
+      return res.sendStatus(400); // Handle missing params
     }
-  }
 });
+  
 
 // Webhook Receiver (POST)
 app.post('/webhook', (req, res) => {
@@ -43,5 +46,5 @@ app.post('/webhook', (req, res) => {
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`🚀 Server is listening on http://localhost:${PORT}`);
+  console.log(`🚀 Server is running`);
 });
