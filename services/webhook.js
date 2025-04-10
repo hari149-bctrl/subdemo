@@ -3,7 +3,6 @@ const { sendDM } = require('./instagram');
 const logger = require('../config/logger');
 
 async function handleCommentEvent(commentData) {
-  // Validate required fields
   if (!commentData.from?.id || !commentData.id || !commentData.text) {
     logger.warn('Invalid comment data received', commentData);
     return;
@@ -13,7 +12,7 @@ async function handleCommentEvent(commentData) {
     // Check for existing record
     const existing = await MessageAttempt.findOne({ commentId: commentData.id });
     if (existing) {
-      logger.debug(`⏭️ Skipping duplicate comment ${commentData.id}`);
+      logger.debug(`Skipping duplicate comment ${commentData.id}`);
       return;
     }
 
@@ -28,28 +27,22 @@ async function handleCommentEvent(commentData) {
 
     // Save to DB first
     await record.save();
-    logger.info(`📝 Stored comment ${commentData.id} from @${commentData.from.username}`);
+    logger.info(`Stored comment ${commentData.id} from @${commentData.from.username}`);
 
     // Process DM if keyword exists
-    if (commentData.text.toLowerCase().includes('job')) {
+    if (commentData.text.toLowerCase().includes(process.env.TARGET_KEYWORD || 'job')) {
       record.attempts += 1;
       record.lastAttempt = new Date();
       
-      const success = await sendDM(record.userId, 
-        "Thanks for your interest! Here's our careers page: [your-link]"
-      );
-
+      const success = await sendDM(record.userId, record.text);
       record.status = success ? 'success' : 'failed';
+      
       await record.save();
-
-      logger[success ? 'info' : 'warn'](
-        `✉️ DM ${success ? 'succeeded' : 'failed'} to @${commentData.from.username}`
-      );
+      logger.info(`DM ${success ? 'succeeded' : 'failed'} to @${commentData.from.username}`);
     }
   } catch (error) {
-    logger.error('💥 Comment processing failed', {
+    logger.error('Comment processing failed', {
       error: error.message,
-      commentId: commentData.id,
       stack: error.stack
     });
   }

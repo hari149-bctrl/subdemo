@@ -2,26 +2,22 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ MongoDB connected');
+    await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000
+    });
     
-    // Enable debug mode in development
-    if (process.env.NODE_ENV === 'development') {
-      mongoose.set('debug', true);
-    }
+    mongoose.connection.on('connected', () => {
+      console.log('✅ MongoDB connected');
+    });
+    
+    mongoose.connection.on('error', (err) => {
+      console.error('❌ MongoDB connection error:', err);
+    });
   } catch (err) {
-    console.error('❌ MongoDB connection failed:', err.message);
+    console.error('❌ MongoDB initial connection failed:', err.message);
     process.exit(1);
   }
 };
-
-// Event listeners for connection
-mongoose.connection.on('connected', () => {
-  console.log('🗄️ MongoDB connection established');
-});
-
-mongoose.connection.on('error', (err) => {
-  console.error('❌ MongoDB connection error:', err);
-});
 
 module.exports = connectDB;
