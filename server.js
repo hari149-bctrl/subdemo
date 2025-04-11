@@ -213,12 +213,13 @@ app.get('/webhook', (req, res) => {
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
 
-  if (mode && token && mode === 'subscribe' && token === VERIFY_TOKEN) {
-    console.log('✅ Webhook verified');
-    res.status(200).send(challenge);
-  } else {
-    console.error('❌ Verification failed. Expected token:', VERIFY_TOKEN, 'Got:', token);
-    res.sendStatus(403);
+    if (token === VERIFY_TOKEN) {
+      console.log('✅ Webhook verified');
+      res.status(200).send(challenge);
+    } else {
+      console.error('❌ Verification failed. Expected token:', VERIFY_TOKEN, 'Got:', token);
+      res.sendStatus(403);
+    }
   }
 });
 app.post('/webhook', validateSignature, async (req, res) => {
