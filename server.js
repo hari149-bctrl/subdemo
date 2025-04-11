@@ -130,51 +130,91 @@ const validateWebhookRequest = (req, res, next) => {
 
 
 // Webhook endpoints
-app.get('/webhook', validateWebhookRequest, (req, res) => {
+// app.get('/webhook', validateWebhookRequest, (req, res) => {
+//   const mode = req.query['hub.mode'];
+//   const token = req.query['hub.verify_token'];
+//   const challenge = req.query['hub.challenge'];
+
+//   if (mode === 'subscribe' && token === process.env.VERIFY_TOKEN) {
+//     console.log('🔐 Webhook verified');
+//     res.status(200).send(challenge);
+//   } else {
+//     console.warn('⚠️ Webhook verification failed');
+//     res.sendStatus(403);
+//   }
+// });
+
+// app.post('/webhook', validateWebhookRequest, async (req, res) => {
+//   try {
+//     const data = req.body;
+//     console.log('📩 Incoming webhook:', JSON.stringify(data, null, 2));
+
+//     if (!data.entry) return res.status(200).send('EVENT_RECEIVED');
+
+//     await Promise.all(data.entry.map(async (entry) => {
+//       try {
+//         for (const change of entry.changes || []) {
+//           if (change.field === 'comments') {
+//             await handleComment(change.value);
+//           }
+//         }
+//       } catch (error) {
+//         console.error('Error processing entry:', error);
+//         await SystemLog.create({
+//           type: 'entry_processing_error',
+//           details: { error: error.message, entry }
+//         });
+//       }
+//     }));
+
+//     res.status(200).send('EVENT_PROCESSED');
+//   } catch (error) {
+//     console.error('❌ Webhook processing error:', error);
+//     res.status(500).send('SERVER_ERROR');
+//   }
+// });
+
+// Instagram API functions
+
+app.get('/webhook', (req, res) => {
+  const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
 
-  if (mode === 'subscribe' && token === process.env.VERIFY_TOKEN) {
-    console.log('🔐 Webhook verified');
+  if (mode && token && mode === 'subscribe' && token === VERIFY_TOKEN) {
+    console.log('✅ Webhook verified successfully!');
     res.status(200).send(challenge);
   } else {
-    console.warn('⚠️ Webhook verification failed');
     res.sendStatus(403);
   }
 });
 
-app.post('/webhook', validateWebhookRequest, async (req, res) => {
-  try {
-    const data = req.body;
-    console.log('📩 Incoming webhook:', JSON.stringify(data, null, 2));
+app.post('/webhook', (req, res) => {
+  console.log('🔥 Webhook event received:', JSON.stringify(req.body, null, 2));
 
-    if (!data.entry) return res.status(200).send('EVENT_RECEIVED');
+  const body = req.body;
 
-    await Promise.all(data.entry.map(async (entry) => {
-      try {
-        for (const change of entry.changes || []) {
-          if (change.field === 'comments') {
-            await handleComment(change.value);
-          }
+  if (body.object === 'instagram') {
+    body.entry.forEach(entry => {
+      const changes = entry.changes;
+      changes.forEach(change => {
+        if (change.field === 'comments') {
+          const comment = change.value.text;
+          const username = change.value.from.username;
+          console.log(`💬 ${username} commented: ${comment}`);
         }
-      } catch (error) {
-        console.error('Error processing entry:', error);
-        await SystemLog.create({
-          type: 'entry_processing_error',
-          details: { error: error.message, entry }
-        });
-      }
-    }));
+      });
+    });
 
-    res.status(200).send('EVENT_PROCESSED');
-  } catch (error) {
-    console.error('❌ Webhook processing error:', error);
-    res.status(500).send('SERVER_ERROR');
+    res.status(200).send('EVENT_RECEIVED');
+  } else {
+    res.sendStatus(404);
   }
 });
 
-// Instagram API functions
+
 async function fetchRecentPosts() {
   try {
     const url = `https://graph.facebook.com/v19.0/${config.instagramBusinessId}/media`;
