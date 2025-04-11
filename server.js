@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
 
 
 
@@ -122,9 +123,15 @@ const validateWebhookRequest = (req, res, next) => {
   const signature = req.headers['x-hub-signature-256'];
   if (!signature) {
     console.warn('Missing signature header');
-    return res.sendStatus(401);
+    return res.sendStatus(403);
   }
-  // Add signature validation logic here
+  const hmac = crypto.createHmac('sha256', process.env.APP_SECRET);
+  const digest = `sha256=${hmac.update(JSON.stringify(req.body)).digest('hex')}`;
+
+  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest))) {
+    console.error('❌ Invalid signature');
+    return res.sendStatus(403);
+  }
   next();
 };
 
@@ -176,41 +183,82 @@ const validateWebhookRequest = (req, res, next) => {
 
 // Instagram API functions
 
+// app.get('/webhook', (req, res) => {
+//   const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+
+//   const mode = req.query['hub.mode'];
+//   const token = req.query['hub.verify_token'];
+//   const challenge = req.query['hub.challenge'];
+
+//   if (mode && token && mode === 'subscribe' && token === VERIFY_TOKEN) {
+//     console.log('✅ Webhook verified successfully!');
+//     res.status(200).send(challenge);
+//   } else {
+//     res.sendStatus(403);
+//   }
+// });
+
+// app.post('/webhook', (req, res) => {
+//   console.log('🔥 Webhook event received:', JSON.stringify(req.body, null, 2));
+
+//   const body = req.body;
+
+//   if (body.object === 'instagram') {
+//     body.entry.forEach(entry => {
+//       const changes = entry.changes;
+//       changes.forEach(change => {
+//         if (change.field === 'comments') {
+//           const comment = change.value.text;
+//           const username = change.value.from.username;
+//           console.log(`💬 ${username} commented: ${comment}`);
+//         }
+//       });
+//     });
+
+//     res.status(200).send('EVENT_RECEIVED');
+//   } else {
+//     res.sendStatus(404);
+//   }
+// });
+
+// Updated webhook endpoints
 app.get('/webhook', (req, res) => {
   const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
-
+  
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
 
   if (mode && token && mode === 'subscribe' && token === VERIFY_TOKEN) {
-    console.log('✅ Webhook verified successfully!');
+    console.log('✅ Webhook verified');
     res.status(200).send(challenge);
   } else {
+    console.error('❌ Verification failed. Expected token:', VERIFY_TOKEN, 'Got:', token);
     res.sendStatus(403);
   }
 });
 
-app.post('/webhook', (req, res) => {
-  console.log('🔥 Webhook event received:', JSON.stringify(req.body, null, 2));
+app.post('/webhook', validateSignature, (req, res) => {
+  console.log('📩 Valid webhook event:', req.body.object);
+  
+  try {
+    const body = req.body;
+    if (body.object !== 'instagram') return res.sendStatus(404);
 
-  const body = req.body;
-
-  if (body.object === 'instagram') {
-    body.entry.forEach(entry => {
-      const changes = entry.changes;
-      changes.forEach(change => {
+    body.entry?.forEach(entry => {
+      entry.changes?.forEach(change => {
         if (change.field === 'comments') {
-          const comment = change.value.text;
-          const username = change.value.from.username;
-          console.log(`💬 ${username} commented: ${comment}`);
+          const comment = change.value;
+          console.log(`💬 New comment from ${comment.from?.username}:`, comment.text);
+          // Add your comment processing logic here
         }
       });
     });
 
-    res.status(200).send('EVENT_RECEIVED');
-  } else {
-    res.sendStatus(404);
+    res.status(200).send('EVENT_PROCESSED');
+  } catch (err) {
+    console.error('❌ Webhook processing error:', err);
+    res.sendStatus(500);
   }
 });
 
