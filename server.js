@@ -177,8 +177,17 @@ const validateWebhookRequest = (req, res, next) => {
 
 // Instagram API functions
 
-app.use('/webhook', bodyParser.raw({ type: 'application/json' }));
-
+app.use('/webhook', (req, res, next) => {
+  let data = '';
+  req.setEncoding('utf8');
+  req.on('data', chunk => {
+    data += chunk;
+  });
+  req.on('end', () => {
+    req.rawBody = data;
+    next();
+  });
+});
 
 const validateSignature = (req, res, next) => {
   if (req.method === 'GET' || req.query['hub.mode'] === 'subscribe') {
@@ -188,10 +197,6 @@ const validateSignature = (req, res, next) => {
   const signature = req.headers['x-hub-signature-256'];
   console.log('🔐 Incoming Signature Header:', signature);
 
-  console.log('🧪 typeof req.body:', typeof req.body);
-  console.log('🧪 Is Buffer:', Buffer.isBuffer(req.body));
-  console.log('🧪 req.body (raw):', req.body);
-
   if (!signature) {
     console.error('❌ Missing X-Hub-Signature header');
     return res.sendStatus(403);
@@ -199,7 +204,7 @@ const validateSignature = (req, res, next) => {
 
   try {
     const hmac = crypto.createHmac('sha256', process.env.APP_SECRET);
-    const digest = `sha256=${hmac.update(req.body).digest('hex')}`; // <-- fails if req.body is not Buffer
+    const digest = `sha256=${hmac.update(req.rawBody).digest('hex')}`;
 
     console.log('✅ Generated Digest:', digest);
 
@@ -208,40 +213,21 @@ const validateSignature = (req, res, next) => {
       return res.sendStatus(403);
     }
 
+    // Parse JSON only after validation
+    req.body = JSON.parse(req.rawBody);
     next();
   } catch (err) {
-    console.error('❌ Signature verification error:', err.message);
+    console.error('❌ Signature verification error:', err);
     res.sendStatus(500);
   }
 };
 
-
-
-
-
-app.get('/webhook', (req, res) => {
-  const VERIFY_TOKEN = 'webbrainy';
-  
-  const mode = req.query['hub.mode'];
-  const token = req.query['hub.verify_token'];
-  const challenge = req.query['hub.challenge'];
-
-    if (token === VERIFY_TOKEN) {
-      console.log('✅ Webhook verified');
-      res.status(200).send(challenge);
-    } else {
-      console.error('❌ Verification failed. Expected token:', VERIFY_TOKEN, 'Got:', token);
-      res.sendStatus(403);
-    }
-  
-});
 app.post('/webhook', validateSignature, async (req, res) => {
   try {
-    const body = JSON.parse(req.body.toString());
+    // req.body is now available as parsed JSON
+    if (req.body.object !== 'instagram') return res.sendStatus(404);
 
-    if (body.object !== 'instagram') return res.sendStatus(404);
-
-    await Promise.all(body.entry?.map(async (entry) => {
+    await Promise.all(req.body.entry?.map(async (entry) => {
       await Promise.all(entry.changes?.map(async (change) => {
         if (change.field === 'comments') {
           await handleComment(change.value);
@@ -251,7 +237,7 @@ app.post('/webhook', validateSignature, async (req, res) => {
 
     res.status(200).send('EVENT_PROCESSED');
   } catch (err) {
-    console.error('❌ Webhook processing error:', err.message);
+    console.error('❌ Webhook processing error:', err);
     res.sendStatus(500);
   }
 });
