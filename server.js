@@ -207,7 +207,7 @@ const validateSignature = (req, res, next) => {
 
 
 app.get('/webhook', (req, res) => {
-  const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+  const VERIFY_TOKEN = 'webbrainy';
   
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
