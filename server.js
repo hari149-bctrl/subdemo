@@ -186,6 +186,12 @@ const validateSignature = (req, res, next) => {
   }
 
   const signature = req.headers['x-hub-signature-256'];
+  console.log('🔐 Incoming Signature Header:', signature);
+
+  console.log('🧪 typeof req.body:', typeof req.body);
+  console.log('🧪 Is Buffer:', Buffer.isBuffer(req.body));
+  console.log('🧪 req.body (raw):', req.body);
+
   if (!signature) {
     console.error('❌ Missing X-Hub-Signature header');
     return res.sendStatus(403);
@@ -193,7 +199,9 @@ const validateSignature = (req, res, next) => {
 
   try {
     const hmac = crypto.createHmac('sha256', process.env.APP_SECRET);
-    const digest = `sha256=${hmac.update(req.body).digest('hex')}`;
+    const digest = `sha256=${hmac.update(req.body).digest('hex')}`; // <-- fails if req.body is not Buffer
+
+    console.log('✅ Generated Digest:', digest);
 
     if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest))) {
       console.error('❌ Invalid signature');
@@ -206,6 +214,7 @@ const validateSignature = (req, res, next) => {
     res.sendStatus(500);
   }
 };
+
 
 
 
