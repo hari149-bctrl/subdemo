@@ -220,7 +220,7 @@ app.get('/webhook', (req, res) => {
       console.error('❌ Verification failed. Expected token:', VERIFY_TOKEN, 'Got:', token);
       res.sendStatus(403);
     }
-  }
+  
 });
 app.post('/webhook', validateSignature, async (req, res) => {
   try {
