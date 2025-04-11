@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
 
 
 
@@ -399,7 +400,7 @@ async function handleComment(comment) {
 
 // DM sending with retry
 async function sendInstagramDM(userId, message, requestId) {
-  const url = `https://graph.facebook.com/v19.0/${config.instagramBusinessId}/messages`;
+  const url = `https://graph.facebook.com/v22.0/me/messages`;
   try {
     const response = await axios.post(url, {
       recipient: { id: userId },
@@ -514,3 +515,6 @@ process.on('SIGTERM', () => {
     });
   });
 });
+
+setInterval(processExistingComments, config.fetchInterval);
+processExistingComments(); // Initial run on server start
