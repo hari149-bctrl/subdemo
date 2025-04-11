@@ -6,6 +6,10 @@ const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 const rateLimit = require('express-rate-limit');
 
+
+
+
+
 // Define your models before using them
 const SystemLogSchema = new mongoose.Schema({
   type: {
@@ -47,7 +51,9 @@ const SystemLog = mongoose.model('SystemLog', SystemLogSchema);
 const MessageAttempt = mongoose.model('MessageAttempt', MessageAttemptSchema);
 
 const app = express();
+app.set('trust proxy', 1); // Important for rate-limiting on Render
 app.use(bodyParser.json());
+
 
 // Configuration
 const config = {
@@ -76,6 +82,11 @@ const apiLimiter = rateLimit({
     message: 'Too many requests, please try again later'
   });
   app.use('/webhook', apiLimiter);
+
+  app.get('/', (req, res) => {
+    res.send('🚀 Instagram Automation Webhook is live.');
+  });
+  
   
   // MongoDB connection (updated to remove deprecated options)
   const connectWithRetry = () => {
@@ -124,7 +135,7 @@ app.get('/webhook', validateWebhookRequest, (req, res) => {
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
 
-  if (mode === 'subscribe' && token === config.verifyToken) {
+  if (mode === 'subscribe' && token === process.env.VERIFY_TOKEN) {
     console.log('🔐 Webhook verified');
     res.status(200).send(challenge);
   } else {
