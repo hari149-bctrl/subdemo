@@ -176,7 +176,24 @@ const validateWebhookRequest = (req, res, next) => {
 // });
 
 // Instagram API functions
+// 1. First, ensure you have the GET handler (this was missing)
+app.get('/webhook', (req, res) => {
+  const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'webbrainy';
+  
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
 
+  if (mode && token && mode === 'subscribe' && token === VERIFY_TOKEN) {
+    console.log('✅ Webhook verified');
+    return res.status(200).send(challenge);
+  }
+  
+  console.error('❌ Verification failed');
+  res.sendStatus(403);
+});
+
+// 2. Raw body middleware (keep your existing implementation)
 app.use('/webhook', (req, res, next) => {
   let data = '';
   req.setEncoding('utf8');
@@ -189,6 +206,7 @@ app.use('/webhook', (req, res, next) => {
   });
 });
 
+// 3. Signature validation (your existing implementation is correct)
 const validateSignature = (req, res, next) => {
   if (req.method === 'GET' || req.query['hub.mode'] === 'subscribe') {
     return next();
@@ -213,7 +231,6 @@ const validateSignature = (req, res, next) => {
       return res.sendStatus(403);
     }
 
-    // Parse JSON only after validation
     req.body = JSON.parse(req.rawBody);
     next();
   } catch (err) {
@@ -222,9 +239,9 @@ const validateSignature = (req, res, next) => {
   }
 };
 
+// 4. POST handler (your existing implementation is correct)
 app.post('/webhook', validateSignature, async (req, res) => {
   try {
-    // req.body is now available as parsed JSON
     if (req.body.object !== 'instagram') return res.sendStatus(404);
 
     await Promise.all(req.body.entry?.map(async (entry) => {
