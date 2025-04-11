@@ -194,6 +194,11 @@ const validateSignature = (req, res, next) => {
     return res.sendStatus(403);
   }
 
+  if (!req.rawBody) {
+    console.error('❌ Missing rawBody for signature verification');
+    return res.sendStatus(400);
+  }
+  
   const hmac = crypto.createHmac('sha256', process.env.APP_SECRET);
   const digest = `sha256=${hmac.update(req.rawBody).digest('hex')}`;
 
