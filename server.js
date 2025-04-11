@@ -5,7 +5,6 @@ const mongoose = require('mongoose');
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 const rateLimit = require('express-rate-limit');
-const crypto = require('crypto');
 
 
 
@@ -123,15 +122,9 @@ const validateWebhookRequest = (req, res, next) => {
   const signature = req.headers['x-hub-signature-256'];
   if (!signature) {
     console.warn('Missing signature header');
-    return res.sendStatus(403);
+    return res.sendStatus(401);
   }
-  const hmac = crypto.createHmac('sha256', process.env.APP_SECRET);
-  const digest = `sha256=${hmac.update(JSON.stringify(req.body)).digest('hex')}`;
-
-  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest))) {
-    console.error('❌ Invalid signature');
-    return res.sendStatus(403);
-  }
+  // Add signature validation logic here
   next();
 };
 
@@ -183,45 +176,35 @@ const validateWebhookRequest = (req, res, next) => {
 
 // Instagram API functions
 
-// app.get('/webhook', (req, res) => {
-//   const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+app.use('/webhook', bodyParser.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf.toString();
+  }
+}));
 
-//   const mode = req.query['hub.mode'];
-//   const token = req.query['hub.verify_token'];
-//   const challenge = req.query['hub.challenge'];
+const validateSignature = (req, res, next) => {
+  if (req.method === 'GET' || req.query['hub.mode'] === 'subscribe') {
+    return next(); // Skip for GET/verification requests
+  }
 
-//   if (mode && token && mode === 'subscribe' && token === VERIFY_TOKEN) {
-//     console.log('✅ Webhook verified successfully!');
-//     res.status(200).send(challenge);
-//   } else {
-//     res.sendStatus(403);
-//   }
-// });
+  const signature = req.headers['x-hub-signature-256'];
+  if (!signature) {
+    console.error('❌ Missing X-Hub-Signature header');
+    return res.sendStatus(403);
+  }
 
-// app.post('/webhook', (req, res) => {
-//   console.log('🔥 Webhook event received:', JSON.stringify(req.body, null, 2));
+  const hmac = crypto.createHmac('sha256', process.env.APP_SECRET);
+  const digest = `sha256=${hmac.update(req.rawBody).digest('hex')}`;
 
-//   const body = req.body;
+  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest))) {
+    console.error('❌ Invalid signature');
+    return res.sendStatus(403);
+  }
 
-//   if (body.object === 'instagram') {
-//     body.entry.forEach(entry => {
-//       const changes = entry.changes;
-//       changes.forEach(change => {
-//         if (change.field === 'comments') {
-//           const comment = change.value.text;
-//           const username = change.value.from.username;
-//           console.log(`💬 ${username} commented: ${comment}`);
-//         }
-//       });
-//     });
+  next();
+};
 
-//     res.status(200).send('EVENT_RECEIVED');
-//   } else {
-//     res.sendStatus(404);
-//   }
-// });
 
-// Updated webhook endpoints
 app.get('/webhook', (req, res) => {
   const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
   
@@ -237,23 +220,28 @@ app.get('/webhook', (req, res) => {
     res.sendStatus(403);
   }
 });
-
-app.post('/webhook', validateSignature, (req, res) => {
-  console.log('📩 Valid webhook event:', req.body.object);
-  
+app.post('/webhook', validateSignature, async (req, res) => {
   try {
     const body = req.body;
+    console.log('📩 Valid webhook event:', body.object);
+    
     if (body.object !== 'instagram') return res.sendStatus(404);
 
-    body.entry?.forEach(entry => {
-      entry.changes?.forEach(change => {
-        if (change.field === 'comments') {
-          const comment = change.value;
-          console.log(`💬 New comment from ${comment.from?.username}:`, comment.text);
-          // Add your comment processing logic here
-        }
-      });
-    });
+    await Promise.all(body.entry?.map(async (entry) => {
+      try {
+        await Promise.all(entry.changes?.map(async (change) => {
+          if (change.field === 'comments') {
+            await handleComment(change.value);
+          }
+        }));
+      } catch (error) {
+        console.error('Error processing entry:', error);
+        await SystemLog.create({
+          type: 'entry_processing_error',
+          details: { error: error.message, entry }
+        });
+      }
+    }));
 
     res.status(200).send('EVENT_PROCESSED');
   } catch (err) {
