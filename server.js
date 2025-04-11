@@ -177,15 +177,12 @@ const validateWebhookRequest = (req, res, next) => {
 
 // Instagram API functions
 
-app.use('/webhook', bodyParser.json({
-  verify: (req, res, buf) => {
-    req.rawBody = buf.toString();
-  }
-}));
+app.use('/webhook', bodyParser.raw({ type: '*/*' }));
+
 
 const validateSignature = (req, res, next) => {
   if (req.method === 'GET' || req.query['hub.mode'] === 'subscribe') {
-    return next(); // Skip for GET/verification requests
+    return next(); // skip verification for GET webhook challenge
   }
 
   const signature = req.headers['x-hub-signature-256'];
@@ -194,13 +191,13 @@ const validateSignature = (req, res, next) => {
     return res.sendStatus(403);
   }
 
-  if (!req.rawBody) {
+  if (!req.body) {
     console.error('❌ Missing rawBody for signature verification');
-    return res.sendStatus(400);
+    return res.sendStatus(403);
   }
-  
+
   const hmac = crypto.createHmac('sha256', process.env.APP_SECRET);
-  const digest = `sha256=${hmac.update(req.rawBody).digest('hex')}`;
+  const digest = `sha256=${hmac.update(req.body).digest('hex')}`;
 
   if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest))) {
     console.error('❌ Invalid signature');
@@ -209,6 +206,7 @@ const validateSignature = (req, res, next) => {
 
   next();
 };
+
 
 
 app.get('/webhook', (req, res) => {
@@ -227,35 +225,50 @@ app.get('/webhook', (req, res) => {
     }
   
 });
-app.post('/webhook', validateSignature, async (req, res) => {
+app.post('/webhook', validateSignature, (req, res) => {
   try {
-    const body = req.body;
-    console.log('📩 Valid webhook event:', body.object);
-    
+    const body = JSON.parse(req.body.toString());
+
     if (body.object !== 'instagram') return res.sendStatus(404);
 
-    await Promise.all(body.entry?.map(async (entry) => {
-      try {
-        await Promise.all(entry.changes?.map(async (change) => {
-          if (change.field === 'comments') {
-            await handleComment(change.value);
-          }
-        }));
-      } catch (error) {
-        console.error('Error processing entry:', error);
-        await SystemLog.create({
-          type: 'entry_processing_error',
-          details: { error: error.message, entry }
-        });
-      }
-    }));
-
+    // Process body.entry here...
     res.status(200).send('EVENT_PROCESSED');
-  } catch (err) {
-    console.error('❌ Webhook processing error:', err);
+  } catch (error) {
+    console.error('❌ Failed to parse webhook body:', error);
     res.sendStatus(500);
   }
 });
+
+
+// app.post('/webhook', validateSignature, async (req, res) => {
+//   try {
+//     const body = req.body;
+//     console.log('📩 Valid webhook event:', body.object);
+    
+//     if (body.object !== 'instagram') return res.sendStatus(404);
+
+//     await Promise.all(body.entry?.map(async (entry) => {
+//       try {
+//         await Promise.all(entry.changes?.map(async (change) => {
+//           if (change.field === 'comments') {
+//             await handleComment(change.value);
+//           }
+//         }));
+//       } catch (error) {
+//         console.error('Error processing entry:', error);
+//         await SystemLog.create({
+//           type: 'entry_processing_error',
+//           details: { error: error.message, entry }
+//         });
+//       }
+//     }));
+
+//     res.status(200).send('EVENT_PROCESSED');
+//   } catch (err) {
+//     console.error('❌ Webhook processing error:', err);
+//     res.sendStatus(500);
+//   }
+// });
 
 
 async function fetchRecentPosts() {
