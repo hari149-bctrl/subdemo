@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Post Details</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      flex-direction: row;
+    }
+    .left-panel {
+      width: 50%;
+      background: #fff;
+      padding: 30px;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      margin-top: 0;
+    }
+    .info p {
+      margin: 10px 0;
+    }
+    .comment {
+  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid #eee;
+}
+
+.dm-status {
+  margin-top: 5px;
+  font-size: 0.9em;
+}
+
+.status-pending { color: orange; }
+.status-sent { color: green; }
+.status-failed { color: red; }
+
+.retry-dm {
+  background: #ffc107;
+  border: none;
+  padding: 2px 8px;
+  margin-left: 10px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+#custom-message {
+  width: 100%;
+  padding: 8px;
+  margin: 5px 0;
+}
+    .keyword-display {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #e0f7fa;
+      border-radius: 4px;
+      color: #00796b;
+      font-weight: bold;
+    }
+    button {
+      margin-top: 20px;
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #218838;
+    }
+  </style>
+</head>
+<body>
+  <div class="left-panel">
+    <h2>Post Information</h2>
+    <div class="info" id="post-info">
+        <!-- Filled by JS -->
+      </div>
+      
+      <div style="margin-top: 20px;">
+        <label for="edit-keyword"><strong>Edit Keyword:</strong></label>
+        <input type="text" id="edit-keyword" placeholder="Enter keyword" />
+        <button id="save-keyword">Save Keyword</button>
+      </div>
+      <!-- Add this below your keyword edit section -->
+    <div style="margin-top: 20px;">
+        <label for="custom-message"><strong>Custom DM Message:</strong></label>
+        <textarea id="custom-message" rows="3" style="width: 100%;"></textarea>
+        <button id="save-message">Save Message</button>
+    </div>
+      
+      <div style="margin-top: 30px;" id="matching-comments">
+        <h3>Matching Comments</h3>
+        <div id="comments-container">
+          <!-- Comments will load here -->
+        </div>
+      </div>
+      
+    <button id="send-to-db">Send to MongoDB</button>
+  </div>
+
+  <script>
+    let currentPostId = null;
+    let currentPostData = null;
+    
+    async function loadPostDetails() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const postId = urlParams.get('id');
+      currentPostId = postId;
+    
+      if (!postId) {
+        document.getElementById('post-info').innerHTML = '<p>No Post ID provided.</p>';
+        return;
+      }
+    
+      try {
+        const response = await fetch(`/api/posts/${postId}`);
+        currentPostData = await response.json();
+    
+        document.getElementById('post-info').innerHTML = `
+          <p><strong>Page ID:</strong> ${currentPostData.id}</p>
+          <p><strong>Caption:</strong> ${currentPostData.caption}</p>
+          <p><strong>Timestamp:</strong> ${currentPostData.timestamp}</p>
+          <p><strong>Permalink:</strong> <a href="${currentPostData.link}" target="_blank">${currentPostData.link}</a></p>
+          <p><strong>Keyword:</strong> <span class="keyword-display" id="current-keyword">${currentPostData.keyword}</span></p>
+        `;
+    
+        document.getElementById('edit-keyword').value = currentPostData.keyword;
+        document.getElementById('custom-message').value = currentPostData.customMessage || '';
+        
+        displayComments(currentPostData.comments, currentPostData.keyword);
+    
+        // Store for DB
+        window.postData = {
+          pageId: currentPostData.id,
+          caption: currentPostData.caption,
+          timestamp: currentPostData.timestamp,
+          permalink: currentPostData.link,
+          keyword: currentPostData.keyword,
+          customMessage: currentPostData.customMessage || ''
+        };
+    
+      } catch (error) {
+        console.error('Error loading post:', error);
+        document.getElementById('post-info').innerHTML = '<p>Error loading post details.</p>';
+      }
+    }
+    
+    function displayComments(comments, keyword) {
+      const container = document.getElementById('comments-container');
+      container.innerHTML = '';
+    
+      const matching = comments.filter(c => c.text.toLowerCase().includes(keyword.toLowerCase()));
+    
+      if (matching.length === 0) {
+        container.innerHTML = '<p>No matching comments for this keyword.</p>';
+        return;
+      }
+    
+      container.innerHTML = `<p><strong>${matching.length}</strong> comment(s) matched:</p>`;
+    
+      matching.forEach(comment => {
+        const status = currentPostData.dmStatus?.find(s => s.userId === comment.id)?.status || 'pending';
+        const div = document.createElement('div');
+        div.className = 'comment';
+        div.innerHTML = `
+          <p><strong>${comment.username}</strong> (${comment.timestamp})</p>
+          <p>${comment.text}</p>
+          <div class="dm-status">
+            Status: <span class="status-${status}">${status}</span>
+            ${status === 'failed' ? 
+              `<button class="retry-dm" data-userid="${comment.id}" data-username="${comment.username}">Retry</button>` : ''}
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    
+      // Add retry handlers
+      document.querySelectorAll('.retry-dm').forEach(btn => {
+        btn.addEventListener('click', () => sendDM(
+          btn.dataset.userid, 
+          btn.dataset.username
+        ));
+      });
+    }
+    
+    async function sendDM(userId, username) {
+      try {
+        const response = await fetch('/api/send-dm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            postId: currentPostId,
+            userId,
+            username,
+            message: currentPostData.customMessage
+          })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+          loadPostDetails(); // Refresh status
+        } else {
+          alert('Failed to send DM: ' + (result.message || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('DM failed:', error);
+        alert('Failed to send DM. Check console for details.');
+      }
+    }
+    
+    document.getElementById('save-message').addEventListener('click', async () => {
+      const message = document.getElementById('custom-message').value.trim();
+      if (!message) {
+        alert('Please enter a message');
+        return;
+      }
+    
+      try {
+        const response = await fetch('/api/update-message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            postId: currentPostId,
+            message
+          })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+          loadPostDetails();
+          alert('Message saved successfully!');
+        } else {
+          alert('Failed to save message: ' + result.message);
+        }
+      } catch (error) {
+        console.error('Error saving message:', error);
+        alert('Failed to save message. Check console for details.');
+      }
+    });
+    
+    document.getElementById('save-keyword').addEventListener('click', async () => {
+      const newKeyword = document.getElementById('edit-keyword').value.trim();
+      if (!newKeyword) return alert('Enter a keyword');
+    
+      try {
+        const response = await fetch('/api/update-keyword-for-post', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            postId: currentPostId,
+            keyword: newKeyword
+          })
+        });
+    
+        const result = await response.json();
+        if (result.success) {
+          document.getElementById('current-keyword').textContent = newKeyword;
+          loadPostDetails();
+          alert('Keyword updated!');
+        } else {
+          alert(result.message || 'Failed to update keyword');
+        }
+      } catch (err) {
+        console.error('Update keyword error:', err);
+        alert('Failed to update keyword');
+      }
+    });
+    
+    document.getElementById('send-to-db').addEventListener('click', async () => {
+      try {
+        // Update postData with current values
+        window.postData = {
+          ...window.postData,
+          keyword: document.getElementById('edit-keyword').value.trim(),
+          customMessage: document.getElementById('custom-message').value.trim()
+        };
+    
+        const response = await fetch('/api/save-post', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(window.postData)
+        });
+    
+        const result = await response.json();
+        if (result.success) {
+          alert('Post successfully saved to MongoDB!');
+          loadPostDetails(); // Refresh with latest data
+        } else {
+          alert('Failed to save post: ' + result.message);
+        }
+      } catch (error) {
+        console.error('Error saving post:', error);
+        alert('Failed to save post. Check console for details.');
+      }
+    });
+    
+    // Initialize
+    loadPostDetails();
+    </script>
+
+</body>
+</html>

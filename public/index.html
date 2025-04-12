@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instagram Post Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+    .posts-list {
+      margin-top: 20px;
+    }
+    .post-card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .post-card h3 {
+      margin-top: 0;
+      color: #333;
+    }
+    .post-card p {
+      margin: 5px 0;
+      color: #666;
+    }
+    .view-details {
+      background: #3897f0;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .view-details:hover {
+      background: #2684f0;
+    }
+    .post-details {
+      display: none;
+      margin-top: 20px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #eee;
+    }
+    .comment {
+      padding: 10px;
+      margin: 10px 0;
+      background: white;
+      border-radius: 4px;
+      border: 1px solid #eee;
+    }
+    .keyword-display {
+      display: inline-block;
+      padding: 3px 8px;
+      background: #e0f7fa;
+      border-radius: 4px;
+      color: #00796b;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Instagram Post Dashboard</h1>
+    
+    <div class="keyword-control">
+      <h3>Current Keyword: <span class="keyword-display" id="current-keyword">job</span></h3>
+      <input type="text" id="new-keyword" placeholder="Enter new keyword">
+      <button id="update-keyword">Update Keyword</button>
+    </div>
+    
+    <div class="posts-list" id="posts-list">
+      <!-- Posts will be loaded here -->
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      loadPosts();
+      
+      document.getElementById('update-keyword').addEventListener('click', updateKeyword);
+    });
+
+    async function loadPosts() {
+      try {
+        const response = await fetch('/api/posts');
+        const posts = await response.json();
+        
+        const postsList = document.getElementById('posts-list');
+        postsList.innerHTML = '';
+        
+        if (posts.length === 0) {
+          postsList.innerHTML = '<p>No posts found.</p>';
+          return;
+        }
+        
+        posts.forEach(post => {
+          const postCard = document.createElement('div');
+          postCard.className = 'post-card';
+          postCard.innerHTML = `
+            <h3>${post.caption.substring(0, 50)}${post.caption.length > 50 ? '...' : ''}</h3>
+            <p><strong>ID:</strong> ${post.id}</p>
+            <p><strong>Posted:</strong> ${post.timestamp}</p>
+            <button class="view-details" data-post-id="${post.id}">View Details</button>
+            <div class="post-details" id="details-${post.id}"></div>
+          `;
+          postsList.appendChild(postCard);
+          
+          // Add click handler for the view details button
+          // Inside loadPosts() - change view-details button handler
+            postCard.querySelector('.view-details').addEventListener('click', function () {
+            const postId = this.getAttribute('data-post-id');
+            window.open(`/details.html?id=${postId}`);
+            });
+
+        });
+      } catch (error) {
+        console.error('Error loading posts:', error);
+        alert('Failed to load posts. Check console for details.');
+      }
+    }
+
+    async function togglePostDetails(postId) {
+      const detailsDiv = document.getElementById(`details-${postId}`);
+      
+      if (detailsDiv.style.display === 'block') {
+        detailsDiv.style.display = 'none';
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/posts/${postId}`);
+        const postDetails = await response.json();
+        
+        detailsDiv.innerHTML = `
+          <h3>Post Details</h3>
+          <p><strong>Full Caption:</strong> ${postDetails.caption}</p>
+          <p><strong>Keyword:</strong> <span class="keyword-display">${postDetails.keyword}</span></p>
+          <p><strong>Link:</strong> <a href="${postDetails.link}" target="_blank">View on Instagram</a></p>
+          
+          <h4>Matching Comments (${postDetails.comments.length})</h4>
+          ${postDetails.comments.length > 0 ? 
+            postDetails.comments.map(comment => `
+              <div class="comment">
+                <p><strong>${comment.username}</strong> (${comment.timestamp})</p>
+                <p>${comment.text}</p>
+              </div>
+            `).join('') : 
+            '<p>No comments match the current keyword.</p>'}
+        `;
+        
+        detailsDiv.style.display = 'block';
+      } catch (error) {
+        console.error('Error loading post details:', error);
+        detailsDiv.innerHTML = '<p>Failed to load post details.</p>';
+        detailsDiv.style.display = 'block';
+      }
+    }
+
+    async function updateKeyword() {
+      const newKeyword = document.getElementById('new-keyword').value.trim();
+      
+      if (!newKeyword) {
+        alert('Please enter a keyword');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/update-keyword', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ keyword: newKeyword })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          document.getElementById('current-keyword').textContent = newKeyword;
+          loadPosts();
+        } else {
+          alert(result.message || 'Failed to update keyword');
+        }
+      } catch (error) {
+        console.error('Error updating keyword:', error);
+        alert('Failed to update keyword. Check console for details.');
+      }
+    }
+  </script>
+</body>
+</html>
