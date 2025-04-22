@@ -5,473 +5,428 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
 const IG_USER_ID = process.env.INSTAGRAM_BUSINESS_ID;
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
-let KEYWORD = process.env.KEYWORD?.toLowerCase() || 'job';
+const CHECK_INTERVAL = process.env.CHECK_INTERVAL || 5 * 60 * 1000; // 5 minutes
+const APP_SECRET = process.env.APP_SECRET;
+const FACEBOOK_PAGE_ID = process.env.FACEBOOK_PAGE_ID
 
 app.use(express.static('public'));
 app.use(express.json());
 
-
-
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection failed:', err));
-
-  const postSchema = new mongoose.Schema({
-    pageId: String,
-    caption: String,
-    timestamp: String,
-    permalink: String,
-    keyword: String,
-    customMessage: String,  // Add this line
-    dmStatus: [{
-      userId: String,
-      username: String,
-      status: String, // 'pending', 'sent', 'failed'
-      lastAttempt: Date
-    }]
-  });
-  
-  const Post = mongoose.model('Post', postSchema);
-  
-  app.post('/api/update-keyword-for-post', async (req, res) => {
-    const { postId, keyword } = req.body;
-  
-    if (!postId || !keyword) {
-      return res.status(400).json({ success: false, message: 'Post ID and keyword are required' });
+// Verify webhook signature
+function verifySignature(req, res, buf) {
+  const signature = req.headers['x-hub-signature'];
+  if (!signature) {
+    throw new Error('Signature verification failed');
+  } else {
+    const elements = signature.split('=');
+    const signatureHash = elements[1];
+    const expectedHash = crypto
+      .createHmac('sha1', APP_SECRET)
+      .update(buf)
+      .digest('hex');
+    
+    if (signatureHash !== expectedHash) {
+      throw new Error('Signature verification failed');
     }
-  
-    try {
-      const updated = await Post.findOneAndUpdate(
-        { pageId: postId },
-        { keyword },
-        { new: true, upsert: true } // Creates if doesn't exist
-      );
-  
-      res.json({ success: true, post: updated });
-    } catch (err) {
-      console.error('Error updating keyword:', err);
-      res.status(500).json({ success: false, message: 'Failed to update keyword' });
-    }
-  });
-  
+  }
+}
 
+app.use(express.json({ verify: verifySignature }));
 
+// MongoDB Schema
+const postSchema = new mongoose.Schema({
+  postId: { type: String, required: true, unique: true },
+  caption: String,
+  timestamp: { type: Date, default: Date.now },
+  keyword: { type: String, default: 'none' },
+  messageTemplate: { type: String, default: 'none' },
+  comments: [{
+    commentId: String,
+    username: String,
+    userId: String,
+    text: String,
+    timestamp: { type: Date, default: Date.now },
+    dmStatus: {
+      type: String,
+      enum: ['pending', 'sent', 'failed'],
+      default: 'pending'
+    },
+    dmTimestamp: Date
+  }],
+  lastChecked: Date
+});
 
-// Update your /api/posts endpoint
-app.get('/api/posts', async (req, res) => {
+const Post = mongoose.model('Post', postSchema);
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('✅ Connected to MongoDB'))
+.catch(err => console.error('❌ MongoDB connection error:', err));
+
+// Fetch posts and comments
+async function fetchPostsAndComments() {
   try {
+    console.log('⏳ Fetching posts and comments...');
     const response = await axios.get(`https://graph.facebook.com/v22.0/${IG_USER_ID}/media`, {
       params: {
-        fields: 'id,caption,media_type,timestamp,permalink',
+        fields: 'id,caption,timestamp,comments{id,text,from,timestamp}',
         access_token: ACCESS_TOKEN,
       },
     });
 
-    // Get all posts from DB to check for custom keywords
-    const dbPosts = await Post.find({});
-    const dbPostsMap = new Map(dbPosts.map(post => [post.pageId, post]));
+    const posts = response.data.data;
+    console.log(`📊 Found ${posts.length} posts`);
 
-    const posts = response.data.data.map(post => {
-      const dbPost = dbPostsMap.get(post.id);
-      return {
-        id: post.id,
-        caption: post.caption || 'No caption',
-        timestamp: new Date(post.timestamp).toLocaleString(),
-        link: post.permalink,
-        keyword: dbPost?.keyword || KEYWORD // Use stored keyword if available
-      };
-    });
-
-    res.json(posts);
-  } catch (error) {
-    console.error('Failed to fetch posts:', error.response?.data || error.message);
-    res.status(500).json({ error: 'Failed to fetch posts' });
-  }
-});
-
-// Update your /api/posts/:id endpoint
-app.get('/api/posts/:id', async (req, res) => {
-  try {
-    const postId = req.params.id;
-    
-    // Check MongoDB first for stored keyword
-    const dbPost = await Post.findOne({ pageId: postId });
-    const keywordToUse = dbPost?.keyword || KEYWORD;
-
-    // Get post details from Instagram
-    const postResponse = await axios.get(`https://graph.facebook.com/v22.0/${postId}`, {
-      params: {
-        fields: 'id,caption,media_type,timestamp,permalink',
-        access_token: ACCESS_TOKEN,
-      },
-    });
-
-    const post = postResponse.data;
-    const comments = await fetchCommentsForPost(postId, keywordToUse);
-    
-    res.json({
-      id: post.id,
-      caption: post.caption || 'No caption',
-      timestamp: new Date(post.timestamp).toLocaleString(),
-      link: post.permalink,
-      keyword: keywordToUse, // Use the correct keyword (stored or global)
-      customMessage: dbPost?.customMessage || '',
-      comments: comments,
-      dmStatus: dbPost?.dmStatus || []
-    });
-  } catch (error) {
-    console.error('Failed to fetch post details:', error.response?.data || error.message);
-    res.status(500).json({ error: 'Failed to fetch post details' });
-  }
-});
-
-// Update fetchCommentsForPost to accept keyword parameter
-async function fetchCommentsForPost(postId, keyword = KEYWORD) {
-  try {
-    const response = await axios.get(`https://graph.facebook.com/v22.0/${postId}/comments`, {
-      params: {
-        fields: 'id,text,username,timestamp',
-        access_token: ACCESS_TOKEN,
-      },
-    });
-
-    return response.data.data
-      .filter(comment => comment.text?.toLowerCase().includes(keyword.toLowerCase()))
-      .map(comment => ({
-        id: comment.id,
-        username: comment.username,
-        text: comment.text,
-        timestamp: new Date(comment.timestamp).toLocaleString()
-      }));
-  } catch (error) {
-    console.error(`Failed to fetch comments for post ${postId}:`, error.response?.data || error.message);
-    return [];
-  }
-}
-
-app.post('/api/save-post', async (req, res) => {
-  try {
-    const postData = req.body;
-    if (!postData || !postData.pageId) {
-      return res.status(400).json({ success: false, message: 'Invalid post data' });
-    }
-    
-    const result = await Post.findOneAndUpdate(
-      { pageId: postData.pageId },
-      postData,
-      { upsert: true, new: true }
-    );
-    
-    res.json({ success: true, message: 'Post saved to MongoDB', data: result });
-  } catch (err) {
-    console.error('Error saving post:', err);
-    res.status(500).json({ success: false, message: 'Failed to save post' });
-  }
-});
-
-// Update keyword
-app.post('/api/update-keyword', (req, res) => {
-  const newKeyword = req.body.keyword?.toLowerCase();
-  if (newKeyword) {
-    KEYWORD = newKeyword;
-    res.json({ success: true, message: 'Keyword updated successfully' });
-  } else {
-    res.status(400).json({ success: false, message: 'Invalid keyword' });
-  }
-});
-
-
-
-
-
-
-
-
-
-
-
-// dm sending logic
-// Update message
-async function sendActualDM(userId, message) {
-  try {
-    console.log(`Attempting to send DM to user ${userId}`);
-    console.log(`Message content: ${message.substring(0, 50)}...`); // Log first 50 chars
-    
-    const response = await axios.post(
-      `https://graph.facebook.com/v22.0/${userId}/messages`,
-      {
-        recipient: { id: userId },
-        message: { text: message }
-      },
-      {
-        params: {
-          access_token: ACCESS_TOKEN
-        },
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    
-    console.log('DM sent successfully:', response.data);
-    return { success: true, data: response.data };
-  } catch (error) {
-    console.error('Failed to send DM:');
-    console.error('URL:', error.config.url);
-    console.error('Error Data:', error.response?.data || error.message);
-    console.error('Status:', error.response?.status);
-    return { 
-      success: false, 
-      error: error.response?.data || error.message 
-    };
-  }
-}
-
-
-
-app.post('/api/update-message', async (req, res) => {
-  const { postId, message } = req.body;
-  await Post.findOneAndUpdate(
-    { pageId: postId },
-    { customMessage: message },
-    { upsert: true }
-  );
-  res.json({ success: true });
-});
-
-// Send DM endpoint
-app.post('/api/send-dm', async (req, res) => {
-  const { postId, userId, username, message } = req.body;
-  
-  try {
-    // Try sending DM (implement your actual DM logic here)
-    const dmResult = await sendActualDM(userId, message);
-    
-    // Update status
-    await Post.findOneAndUpdate(
-      { pageId: postId, 'dmStatus.userId': userId },
-      { 
-        $set: { 
-          'dmStatus.$.status': 'sent',
-          'dmStatus.$.lastAttempt': new Date() 
-        }
-      },
-      { upsert: true, new: true }
-    );
-    
-    res.json({ success: true });
-  } catch (error) {
-    // Mark as failed
-    await Post.findOneAndUpdate(
-      { pageId: postId },
-      { 
-        $push: { 
-          dmStatus: {
-            userId,
-            username,
-            status: 'failed',
-            lastAttempt: new Date()
-          }
-        }
-      },
-      { upsert: true }
-    );
-    res.json({ success: false });
-  }
-});
-
-// Background worker for auto DMs
-// Background worker for auto DMs
-setInterval(async () => {
-  console.log('\n--- Running auto DM check ---', new Date().toISOString());
-  
-  try {
-    const posts = await Post.find({});
-    console.log(`Found ${posts.length} posts to process`);
-    
     for (const post of posts) {
-      try {
-        console.log(`\nProcessing post ${post.pageId}`);
-        
-        if (!post.customMessage) {
-          console.log('Skipping - no custom message set');
-          continue;
-        }
+      const existingPost = await Post.findOne({ postId: post.id });
+      const keyword = existingPost?.keyword || 'none';
+      const messageTemplate = existingPost?.messageTemplate || 'none';
 
-        const comments = await fetchCommentsForPost(post.pageId, post.keyword);
-        console.log(`Found ${comments.length} matching comments`);
+      const comments = post.comments?.data || [];
+      let newCommentsCount = 0;
 
-        for (const comment of comments) {
-          const existingStatus = post.dmStatus?.find(s => s.userId === comment.id);
-          
-          if (existingStatus?.status === 'sent') {
-            console.log(`Already sent to ${comment.username} - skipping`);
-            continue;
-          }
+      for (const comment of comments) {
+        // Check if comment already exists
+        const commentExists = existingPost?.comments?.some(c => c.commentId === comment.id);
+        if (!commentExists) {
+          newCommentsCount++;
+          const dmStatus = (keyword !== 'none' && comment.text.toLowerCase().includes(keyword.toLowerCase())) 
+            ? 'pending' 
+            : 'ignored';
 
-          console.log(`Preparing to DM ${comment.username} (${comment.id})`);
-          
-          // Update status to pending first
-          await Post.findOneAndUpdate(
-            { pageId: post.pageId },
-            { 
-              $push: { 
-                dmStatus: {
-                  userId: comment.id,
-                  username: comment.username,
-                  status: 'pending',
-                  lastAttempt: new Date()
+          await Post.updateOne(
+            { postId: post.id },
+            {
+              $setOnInsert: {
+                postId: post.id,
+                caption: post.caption,
+                timestamp: post.timestamp,
+                keyword,
+                messageTemplate,
+                lastChecked: new Date()
+              },
+              $push: {
+                comments: {
+                  commentId: comment.id,
+                  username: comment.from.username,
+                  userId: comment.from.id,
+                  text: comment.text,
+                  timestamp: comment.timestamp,
+                  dmStatus
                 }
               }
             },
             { upsert: true }
           );
 
-          // Send the DM
-          const result = await sendActualDM(comment.id, post.customMessage);
-          
-          // Update status based on result
-          await Post.findOneAndUpdate(
-            { pageId: post.pageId, 'dmStatus.userId': comment.id },
-            { 
-              $set: { 
-                'dmStatus.$.status': result.success ? 'sent' : 'failed',
-                'dmStatus.$.lastAttempt': new Date() 
-              }
-            }
-          );
-
-          console.log(`DM status for ${comment.username}: ${result.success ? '✅ Sent' : '❌ Failed'}`);
-          
-          // Rate limiting
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Send DM if keyword matches
+          if (dmStatus === 'pending') {
+            await sendDirectMessage(
+              comment.id,
+              comment.from.username,
+              post.id,
+              messageTemplate,
+              keyword
+            );
+          }
         }
-      } catch (postError) {
-        console.error(`Error processing post ${post.pageId}:`, postError);
+      }
+
+      if (newCommentsCount > 0) {
+        console.log(`📨 Added ${newCommentsCount} new comments to post ${post.id}`);
       }
     }
+
+    console.log('✅ Data processing complete');
   } catch (error) {
-    console.error('Background worker error:', error);
-  }
-  
-  console.log('--- Auto DM check completed ---\n');
-}, 300000); // 5 minutes
-
-// Add this right after your MongoDB connection
-async function verifyInstagramPermissions() {
-  try {
-    console.log('\nVerifying Instagram permissions...');
-    
-    // 1. First verify the Instagram Business account exists
-    const accountInfo = await axios.get(`https://graph.facebook.com/v22.0/${IG_USER_ID}`, {
-      params: {
-        fields: 'name,instagram_business_account',
-        access_token: ACCESS_TOKEN
-      }
-    });
-
-    const igBusinessId = accountInfo.data.instagram_business_account?.id;
-    
-    if (!igBusinessId) {
-      throw new Error('No Instagram Business account connected to this Facebook Page');
-    }
-
-    console.log('✅ Instagram Business Account Verified');
-    console.log(`Account ID: ${igBusinessId}`);
-    console.log(`Account Name: ${accountInfo.data.name}`);
-
-    // 2. Check available permissions
-    const tokenInfo = await axios.get(`https://graph.facebook.com/v22.0/me/permissions`, {
-      params: {
-        access_token: ACCESS_TOKEN
-      }
-    });
-
-    const requiredPermissions = [
-      'instagram_basic',
-      'instagram_manage_messages',
-      'pages_show_list',
-      'pages_read_engagement'
-    ];
-
-    console.log('\nChecking permissions:');
-    const missingPermissions = requiredPermissions.filter(perm => 
-      !tokenInfo.data.data.some(p => p.permission === perm && p.status === 'granted')
-    );
-
-    if (missingPermissions.length > 0) {
-      console.error('❌ Missing required permissions:');
-      missingPermissions.forEach(perm => console.error(`- ${perm}`));
-      console.error('\nGo to Facebook Developer Dashboard > App > Permissions and Features');
-      console.error('to add these permissions and get them approved by Facebook.');
-    } else {
-      console.log('✅ All required permissions granted');
-    }
-
-    // 3. Verify DM capability
-    try {
-      const dmTest = await axios.get(`https://graph.facebook.com/v22.0/${igBusinessId}/conversations`, {
-        params: {
-          fields: 'id',
-          access_token: ACCESS_TOKEN,
-          limit: 1
-        }
-      });
-      console.log('\n✅ Direct Message capability verified');
-    } catch (dmError) {
-      console.error('\n❌ Direct Message capability failed:');
-      console.error(dmError.response?.data || dmError.message);
-      console.error('\nMake sure:');
-      console.error('1. Your Instagram account is a Professional Account');
-      console.error('2. You have "instagram_manage_messages" permission');
-      console.error('3. Your app has gone through Facebook\'s review process');
-    }
-
-  } catch (error) {
-    console.error('\n❌ Instagram verification failed:');
-    console.error(error.response?.data || error.message);
-    console.error('\nRequired setup:');
-    console.error('1. Convert Instagram to Professional Account');
-    console.error('2. Connect Instagram to a Facebook Page');
-    console.error('3. Ensure proper permissions in Facebook Developer Dashboard');
+    console.error('❌ Error fetching posts:', error.response?.data || error.message);
   }
 }
 
-// Call this after MongoDB connects
-mongoose.connection.once('open', () => {
-  verifyInstagramPermissions();
-});
+// Send direct message
+async function sendDirectMessage(commentId, username, postId, template, keyword) {
+  try {
+    const message = template
+      .replace('{username}', username)
+      .replace('{keyword}', keyword);
 
+    console.log(`✉️ Attempting to send DM to @${username}...`);
 
+    // Update status to pending
+    await Post.updateOne(
+      { postId, 'comments.commentId': commentId },
+      { $set: { 
+        'comments.$.dmStatus': 'pending',
+        'comments.$.dmTimestamp': new Date()
+      }}
+    );
+
+    // Send message directly to comment
+    const response = await axios.post(
+      `https://graph.facebook.com/v22.0/${FACEBOOK_PAGE_ID}/messages`,
+      {
+        recipient: {
+          comment_id: commentId
+        },
+        message: {
+          text: message
+        },
+        access_token: ACCESS_TOKEN
+      }
+    );
+
+    // Update status to sent
+    await Post.updateOne(
+      { postId, 'comments.commentId': commentId },
+      { $set: { 'comments.$.dmStatus': 'sent' }}
+    );
+
+    console.log(`✅ DM sent to @${username} (Comment ID: ${commentId})`);
+    return response.data;
+  } catch (error) {
+    console.error(`❌ Failed to send DM to @${username}:`, error.response?.data || error.message);
+    await Post.updateOne(
+      { postId, 'comments.commentId': commentId },
+      { $set: { 'comments.$.dmStatus': 'failed' }}
+    );
+    throw error;
+  }
+}
+
+// Webhook verification
 app.get('/webhook', (req, res) => {
-  const VERIFY_TOKEN = "webbrainy"; // your verify token
-
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
 
-  if (mode && token) {
-    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-      console.log("WEBHOOK_VERIFIED");
-      res.status(200).send(challenge);
-    } else {
-      res.sendStatus(403);
-    }
+  if (mode && token === process.env.VERIFY_TOKEN) {
+    console.log('✅ Webhook verified');
+    res.status(200).send(challenge);
   } else {
-    res.sendStatus(400);
+    console.log('❌ Webhook verification failed');
+    res.sendStatus(403);
   }
 });
 
-// Existing POST webhook handler (if you have it)
-app.post('/webhook', (req, res) => {
-  // your webhook event handling code here
-  res.status(200).send('EVENT_RECEIVED');
+// Webhook for receiving comments
+app.post('/webhook', async (req, res) => {
+  try {
+    const { object_id: postId, text, from, id: commentId } = req.body.entry[0].changes[0].value;
+    
+    console.log(`🔄 New comment received on post ${postId} from @${from.username}`);
+
+    // Check if comment already exists
+    const existingComment = await Post.findOne({
+      postId,
+      'comments.commentId': commentId
+    });
+    
+    if (!existingComment) {
+      const post = await Post.findOne({ postId });
+      if (post) {
+        const dmStatus = (post.keyword !== 'none' && text.toLowerCase().includes(post.keyword.toLowerCase())) 
+          ? 'pending' 
+          : 'ignored';
+
+        await Post.updateOne(
+          { postId },
+          {
+            $push: {
+              comments: {
+                commentId,
+                username: from.username,
+                userId: from.id,
+                text,
+                timestamp: new Date(),
+                dmStatus
+              }
+            }
+          }
+        );
+
+        // Send DM if keyword matches
+        if (dmStatus === 'pending') {
+          await sendDirectMessage(
+            commentId,
+            from.username,
+            postId,
+            post.messageTemplate,
+            post.keyword
+          );
+        }
+
+        console.log(`➕ Added new comment from @${from.username} to database`);
+      }
+    }
+    
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Webhook processing error:', error);
+    res.sendStatus(500);
+  }
 });
 
+// API Endpoints
+app.get('/api/posts', async (req, res) => {
+  try {
+    const posts = await Post.find().sort({ timestamp: -1 });
+    res.json(posts);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch posts' });
+  }
+});
 
+app.get('/api/posts/:id', async (req, res) => {
+  try {
+    const post = await Post.findOne({ postId: req.params.id });
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    
+    res.json({
+      ...post.toObject(),
+      currentSettings: {
+        keyword: post.keyword,
+        messageTemplate: post.messageTemplate
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch post' });
+  }
+});
+
+app.post('/api/update-settings', async (req, res) => {
+  try {
+    const { postId, keyword, messageTemplate } = req.body;
+    
+    await Post.updateOne(
+      { postId },
+      { $set: { keyword, messageTemplate } }
+    );
+    
+    // Process existing comments with new keyword
+    if (keyword && keyword !== 'none') {
+      const post = await Post.findOne({ postId });
+      for (const comment of post.comments) {
+        if (comment.text.toLowerCase().includes(keyword.toLowerCase()) && 
+            comment.dmStatus !== 'sent') {
+          await sendDirectMessage(
+            comment.commentId,
+            comment.username,
+            postId,
+            messageTemplate,
+            keyword
+          );
+        }
+      }
+    }
+    
+    res.json({ success: true, message: 'Settings updated' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update settings' });
+  }
+});
+
+app.post('/api/retry-dm', async (req, res) => {
+  try {
+    const { postId, commentId } = req.body;
+    const post = await Post.findOne({ postId });
+    
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    
+    const comment = post.comments.find(c => c.commentId === commentId);
+    if (!comment) return res.status(404).json({ error: 'Comment not found' });
+    
+    await sendDirectMessage(
+      commentId,
+      comment.username,
+      postId,
+      post.messageTemplate,
+      post.keyword
+    );
+    
+    res.json({ success: true, message: 'DM retry initiated' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retry DM' });
+  }
+});
+
+app.post('/api/refresh-comments', async (req, res) => {
+  try {
+    const { postId } = req.body;
+    
+    const response = await axios.get(`https://graph.facebook.com/v22.0/${postId}`, {
+      params: {
+        fields: 'comments{id,text,from,timestamp}',
+        access_token: ACCESS_TOKEN,
+      },
+    });
+
+    const comments = response.data.comments?.data || [];
+    let newCommentsCount = 0;
+
+    for (const comment of comments) {
+      const commentExists = await Post.findOne({ 
+        postId,
+        'comments.commentId': comment.id 
+      });
+      
+      if (!commentExists) {
+        newCommentsCount++;
+        const post = await Post.findOne({ postId });
+        const dmStatus = (post?.keyword !== 'none' && comment.text.toLowerCase().includes(post?.keyword.toLowerCase())) 
+          ? 'pending' 
+          : 'ignored';
+
+        await Post.updateOne(
+          { postId },
+          {
+            $push: {
+              comments: {
+                commentId: comment.id,
+                username: comment.from.username,
+                userId: comment.from.id,
+                text: comment.text,
+                timestamp: comment.timestamp,
+                dmStatus
+              }
+            }
+          }
+        );
+
+        if (dmStatus === 'pending') {
+          await sendDirectMessage(
+            comment.id,
+            comment.from.username,
+            postId,
+            post.messageTemplate,
+            post.keyword
+          );
+        }
+      }
+    }
+
+    res.json({ 
+      success: true, 
+      message: `Found ${newCommentsCount} new comments`,
+      newComments: newCommentsCount
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to refresh comments' });
+  }
+});
+
+// Start server
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🔗 Webhook URL: https://yourdomain.com/webhook`);
+  
+  // Initial fetch
+  fetchPostsAndComments();
+  
+  // Periodic fetching
+  setInterval(fetchPostsAndComments, CHECK_INTERVAL);
 });
