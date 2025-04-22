@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Brainy Voyage</title>
+  <title>Brainy Voyage Dashboard</title>
   <style>
     * {
       margin: 0;
@@ -31,8 +31,34 @@
     
     .rightContainer {
       width: 70%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .rightTopContainer {
+      padding: 20px;
+      background: white;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .rightBottomContainer {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    
+    .commentsSection {
+      width: 50%;
       padding: 20px;
       overflow-y: auto;
+      border-right: 1px solid #ddd;
+    }
+    
+    .logsSection {
+      width: 50%;
+      padding: 20px;
+      overflow-y: auto;
+      background: #f9f9f9;
     }
     
     .searchBarContainer {
@@ -79,43 +105,30 @@
       text-overflow: ellipsis;
     }
     
-    .rightTopConatiner {
-      display: flex;
+    .postInfo {
       margin-bottom: 20px;
     }
     
-    .rightTopLeft {
-      flex: 1;
+    .postInfo p {
+      margin: 5px 0;
     }
     
-    .rightTopRight {
-      width: 100px;
-      display: flex;
-      justify-content: flex-end;
+    .settingsContainer {
+      margin: 20px 0;
     }
     
-    .refreshBtn {
-      padding: 8px 15px;
-      background: #2ecc71;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-left: 10px;
-    }
-    
-    .keywordContainer {
-      margin: 15px 0;
+    .settingGroup {
+      margin-bottom: 15px;
       display: flex;
       align-items: center;
     }
     
-    .keywordContainer p {
-      margin-right: 10px;
+    .settingLabel {
+      width: 150px;
       font-weight: 500;
     }
     
-    .keywordContainer input {
+    .settingInput {
       flex: 1;
       padding: 8px;
       border: 1px solid #ddd;
@@ -123,13 +136,23 @@
       margin-right: 10px;
     }
     
-    .keywordContainer button {
+    .settingBtn {
       padding: 8px 15px;
       background: #2ecc71;
       color: white;
       border: none;
       border-radius: 4px;
       cursor: pointer;
+    }
+    
+    .actionBtn {
+      padding: 8px 15px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
     }
     
     table {
@@ -157,7 +180,7 @@
       background-color: #f1f1f1;
     }
     
-    button {
+    .retryBtn {
       padding: 5px 10px;
       background: #f39c12;
       color: white;
@@ -180,6 +203,51 @@
       color: #f39c12;
       font-weight: bold;
     }
+    
+    .status-ignored {
+      color: #95a5a6;
+      font-weight: bold;
+    }
+    
+    .logEntry {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      font-family: monospace;
+    }
+    
+    .logEntry.info {
+      color: #2c3e50;
+    }
+    
+    .logEntry.error {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+    
+    .logEntry.success {
+      color: #27ae60;
+    }
+    
+    .logTimestamp {
+      color: #7f8c8d;
+      margin-right: 10px;
+    }
+    
+    .logsHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .clearLogsBtn {
+      padding: 5px 10px;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -194,42 +262,70 @@
       </div>
     </div>
     <div class="rightContainer">
-      <div class="rightTopConatiner">
-        <div class="rightTopLeft">
+      <div class="rightTopContainer">
+        <div class="postInfo">
+          <h3>Post Details</h3>
           <p>ID: <span id="postId">-</span></p>
           <p>Caption: <span id="postCaption">-</span></p>
           <p>Timestamp: <span id="postTimestamp">-</span></p>
-          <div class="keywordContainer">
-            <p>Current Keyword: <span id="currentKeyword" style="color: green;">none</span></p>
-            <input type="text" class="keyword" id="keywordInput" placeholder="Keyword">
-            <button class="updateKeyWord" id="updateKeywordBtn">Update</button>
+        </div>
+        
+        <div class="settingsContainer">
+          <h3>Settings</h3>
+          <div class="settingGroup">
+            <span class="settingLabel">Current Keyword:</span>
+            <span class="settingInput" id="currentKeyword">none</span>
           </div>
-          <div class="keywordContainer">
-            <p>Current Message: <span id="currentMessage" style="color: green;">none</span></p>
-            <input type="text" class="keyword" id="messageInput" placeholder="Message">
-            <button class="updateMessage" id="updateMessageBtn">Update</button>
+          <div class="settingGroup">
+            <span class="settingLabel">New Keyword:</span>
+            <input type="text" class="settingInput" id="keywordInput" placeholder="Enter keyword">
+            <button class="settingBtn" id="updateKeywordBtn">Update</button>
+          </div>
+          
+          <div class="settingGroup">
+            <span class="settingLabel">Current Message:</span>
+            <span class="settingInput" id="currentMessage">none</span>
+          </div>
+          <div class="settingGroup">
+            <span class="settingLabel">New Message:</span>
+            <input type="text" class="settingInput" id="messageInput" placeholder="Enter message template">
+            <button class="settingBtn" id="updateMessageBtn">Update</button>
           </div>
         </div>
-        <div class="rightTopRight">
-          <button class="refreshBtn" id="refreshCommentsBtn">Refresh Comments</button>
+        
+        <div>
+          <button class="actionBtn" id="refreshCommentsBtn">Refresh Comments</button>
+          <button class="actionBtn" id="refreshPostsBtn">Refresh All Posts</button>
         </div>
       </div>
-
+      
       <div class="rightBottomContainer">
-        <table>
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Comment</th>
-              <th>Timestamp</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="commentsTable">
-            <!-- Comments will be loaded here -->
-          </tbody>
-        </table>
+        <div class="commentsSection">
+          <h3>Comments</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Comment</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="commentsTable">
+              <!-- Comments will be loaded here -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="logsSection">
+          <div class="logsHeader">
+            <h3>Activity Logs</h3>
+            <button class="clearLogsBtn" id="clearLogsBtn">Clear Logs</button>
+          </div>
+          <div id="logsContainer">
+            <!-- Logs will be loaded here -->
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -252,16 +348,25 @@
     const postTimestampSpan = document.getElementById('postTimestamp');
     const commentsTable = document.getElementById('commentsTable');
     const refreshCommentsBtn = document.getElementById('refreshCommentsBtn');
+    const refreshPostsBtn = document.getElementById('refreshPostsBtn');
+    const logsContainer = document.getElementById('logsContainer');
+    const clearLogsBtn = document.getElementById('clearLogsBtn');
     
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
       fetchPosts();
+      fetchLogs();
       
-      // Event listeners
+      // Set up event listeners
       searchBtn.addEventListener('click', searchPosts);
       updateKeywordBtn.addEventListener('click', updateSettings);
       updateMessageBtn.addEventListener('click', updateSettings);
       refreshCommentsBtn.addEventListener('click', refreshComments);
+      refreshPostsBtn.addEventListener('click', refreshAllPosts);
+      clearLogsBtn.addEventListener('click', clearLogs);
+      
+      // Refresh logs every 5 seconds
+      setInterval(fetchLogs, 5000);
     });
     
     // Fetch posts
@@ -277,6 +382,7 @@
         }
       } catch (error) {
         console.error('Error fetching posts:', error);
+        addLog(`❌ Failed to fetch posts: ${error.message}`, 'error');
       }
     }
     
@@ -329,6 +435,7 @@
         renderComments(post.comments || []);
       } catch (error) {
         console.error('Error loading post details:', error);
+        addLog(`❌ Failed to load post details: ${error.message}`, 'error');
       }
     }
     
@@ -337,7 +444,7 @@
       commentsTable.innerHTML = '';
       
       if (comments.length === 0) {
-        commentsTable.innerHTML = '<tr><td colspan="5">No comments found</td></tr>';
+        commentsTable.innerHTML = '<tr><td colspan="4">No comments found</td></tr>';
         return;
       }
       
@@ -348,11 +455,10 @@
         row.innerHTML = `
           <td>${comment.username || 'Unknown'}</td>
           <td>${comment.text}</td>
-          <td>${new Date(comment.timestamp).toLocaleString()}</td>
           <td class="${statusClass}">${(comment.dmStatus || 'pending').toUpperCase()}</td>
           <td>
             ${comment.dmStatus === 'failed' ? 
-              `<button class="retry-btn" data-comment-id="${comment.commentId}">Retry</button>` : ''}
+              `<button class="retryBtn" data-comment-id="${comment.commentId}">Retry</button>` : ''}
           </td>
         `;
         
@@ -360,7 +466,7 @@
       });
       
       // Add event listeners to retry buttons
-      document.querySelectorAll('.retry-btn').forEach(btn => {
+      document.querySelectorAll('.retryBtn').forEach(btn => {
         btn.addEventListener('click', () => {
           const commentId = btn.dataset.commentId;
           retryDM(commentId);
@@ -403,14 +509,14 @@
         if (result.success) {
           currentKeywordSpan.textContent = keyword || 'none';
           currentMessageSpan.textContent = messageTemplate || 'none';
-          alert('Settings updated successfully!');
+          addLog(`✅ Updated settings for post ${currentPostId}`);
           loadPostDetails(currentPostId); // Refresh to show changes
         } else {
-          alert(result.message || 'Failed to update settings');
+          addLog(`❌ Failed to update settings: ${result.message}`, 'error');
         }
       } catch (error) {
         console.error('Error updating settings:', error);
-        alert('Failed to update settings');
+        addLog(`❌ Failed to update settings: ${error.message}`, 'error');
       }
     }
     
@@ -432,14 +538,14 @@
         
         const result = await response.json();
         if (result.success) {
-          alert('DM retry initiated!');
+          addLog(`🔄 Retrying DM for comment ${commentId}`);
           loadPostDetails(currentPostId); // Refresh comments
         } else {
-          alert(result.message || 'Failed to retry DM');
+          addLog(`❌ Failed to retry DM: ${result.message}`, 'error');
         }
       } catch (error) {
         console.error('Error retrying DM:', error);
-        alert('Failed to retry DM');
+        addLog(`❌ Failed to retry DM: ${error.message}`, 'error');
       }
     }
     
@@ -460,15 +566,83 @@
         
         const result = await response.json();
         if (result.success) {
-          alert(`Refreshed comments. Found ${result.newComments?.length || 0} new comments`);
+          addLog(`🔄 Refreshed comments for post ${currentPostId}. Found ${result.newComments} new comments`);
           loadPostDetails(currentPostId); // Refresh comments
         } else {
-          alert(result.message || 'Failed to refresh comments');
+          addLog(`❌ Failed to refresh comments: ${result.message}`, 'error');
         }
       } catch (error) {
         console.error('Error refreshing comments:', error);
-        alert('Failed to refresh comments');
+        addLog(`❌ Failed to refresh comments: ${error.message}`, 'error');
       }
+    }
+    
+    // Refresh all posts
+    async function refreshAllPosts() {
+      try {
+        addLog('⏳ Manually refreshing all posts...');
+        await fetch('/api/refresh-comments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            postId: 'all' // Special value to refresh all
+          })
+        });
+        fetchPosts();
+      } catch (error) {
+        console.error('Error refreshing posts:', error);
+        addLog(`❌ Failed to refresh posts: ${error.message}`, 'error');
+      }
+    }
+    
+    // Fetch logs
+    async function fetchLogs() {
+      try {
+        const response = await fetch('/api/logs');
+        const logs = await response.json();
+        renderLogs(logs);
+      } catch (error) {
+        console.error('Error fetching logs:', error);
+      }
+    }
+    
+    // Render logs
+    function renderLogs(logs) {
+      logsContainer.innerHTML = '';
+      
+      logs.forEach(log => {
+        const logElement = document.createElement('div');
+        logElement.className = `logEntry ${log.type || 'info'}`;
+        logElement.innerHTML = `
+          <span class="logTimestamp">[${new Date(log.timestamp).toLocaleTimeString()}]</span>
+          ${log.message}
+        `;
+        logsContainer.appendChild(logElement);
+      });
+    }
+    
+    // Clear logs
+    async function clearLogs() {
+      try {
+        await fetch('/api/logs/clear');
+        fetchLogs();
+        addLog('🧹 Cleared all logs');
+      } catch (error) {
+        console.error('Error clearing logs:', error);
+      }
+    }
+    
+    // Helper to add log to UI immediately
+    function addLog(message, type = 'info') {
+      const logElement = document.createElement('div');
+      logElement.className = `logEntry ${type}`;
+      logElement.innerHTML = `
+        <span class="logTimestamp">[${new Date().toLocaleTimeString()}]</span>
+        ${message}
+      `;
+      logsContainer.insertBefore(logElement, logsContainer.firstChild);
     }
   </script>
 </body>
