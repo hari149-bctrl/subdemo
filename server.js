@@ -309,28 +309,7 @@ app.post('/api/settings', async (req, res) => {
   }
 });
 
-// app.get('/api/settings/:postId', async (req, res) => {
-//   try {
-//     const [setting, comments, fullPost] = await Promise.all([
-//       PostSetting.findOne({ postId: req.params.postId }),
-//       Comment.find({ postId: req.params.postId }),
-//       cachedAllData.find(p => p.postId === req.params.postId)
-//     ]);
 
-//     if (!setting || !fullPost) {
-//       return res.status(404).json({ error: 'Post not found' });
-//     }
-
-//     res.json({ 
-//       settings: setting, 
-//       post: fullPost, 
-//       comments: comments 
-//     });
-//   } catch (err) {
-//     console.error('❌ Data fetch error:', err);
-//     res.status(500).json({ error: 'Failed to fetch post data' });
-//   }
-// });
 
 
 
@@ -394,7 +373,7 @@ app.post('/api/retry/:commentId', async (req, res) => {
 
 // Webhook verification endpoint
 app.get('/webhook', (req, res) => {
-  const verifyToken = process.env.WEBHOOK_VERIFY_TOKEN || 'brainyvoyage123';
+  const verifyToken = process.env.VERIFY_TOKEN;
   
   if (
     req.query['hub.mode'] === 'subscribe' &&
