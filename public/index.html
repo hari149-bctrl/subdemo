@@ -625,8 +625,9 @@
               <td>${commentTime.toLocaleString()}</td>
               <td class="status ${statusClass}">${status}</td>
               <td>
-                <button 
-                  class="retry-btn ${status === "Failed" ? 'hidden' : ''}" 
+                <button
+                  ${comment.status !== 'Failed' ? 'hidden' : ''}
+                  class="retry-btn" 
                   data-commentid="${comment.commentID}"
                   data-postid="${currentPost.postId}">
                   Retry
