@@ -1,7 +1,6 @@
 const express = require('express');
 const axios = require('axios');
 const mongoose = require('mongoose');
-const crypto = require('crypto');
 require('dotenv').config();
 
 const app = express();
@@ -311,9 +310,6 @@ app.post('/api/settings', async (req, res) => {
 });
 
 
-
-
-
 app.get('/api/settings/:postId', async (req, res) => {
   try {
     const [setting, dbComments, fullPost] = await Promise.all([
@@ -368,178 +364,6 @@ app.post('/api/retry/:commentId', async (req, res) => {
 });
 
 
-// ========================
-// Webhook Configuration
-// ========================
-
-// Webhook verification endpoint
-app.get('/webhook', (req, res) => {
-  const verifyToken = process.env.VERIFY_TOKEN;
-  
-  if (
-    req.query['hub.mode'] === 'subscribe' &&
-    req.query['hub.verify_token'] === verifyToken
-  ) {
-    console.log('✅ Webhook verified');
-    res.status(200).send(req.query['hub.challenge']);
-  } else {
-    console.error('❌ Webhook verification failed');
-    res.sendStatus(403);
-  }
-});
-
-// Webhook handler with signature verification
-app.post('/webhook', express.json({ verify: verifySignature }), async (req, res) => {
-  try {
-    console.log('📩 Webhook received for:', req.body.object);
-
-    if (req.body.object === 'instagram') {
-      for (const entry of req.body.entry) {
-        const postId = entry.id;
-        console.log(`🔄 New activity on post: ${postId}`);
-
-        // Immediately fetch and process new comments
-        await fetchAndProcessNewComments(postId);
-      }
-    }
-
-    res.sendStatus(200);
-  } catch (err) {
-    console.error('❌ Webhook processing error:', err);
-    res.sendStatus(500);
-  }
-});
-
-// Signature verification middleware
-function verifySignature(req, res, buf) {
-  const signature = req.headers['x-hub-signature-256'];
-  if (!signature) {
-    throw new Error('Missing signature header');
-  }
-
-  const expectedSignature = crypto
-    .createHmac('sha256', process.env.APP_SECRET)
-    .update(buf)
-    .digest('hex');
-
-  if (signature !== `sha256=${expectedSignature}`) {
-    throw new Error('Invalid signature');
-  }
-}
-
-// ========================
-// Real-time Comment Processing
-// ========================
-
-async function fetchAndProcessNewComments(postId) {
-  try {
-    console.log(`🔍 Fetching new comments for post ${postId}`);
-    
-    // 1. Get fresh comments from Instagram API
-    const response = await axios.get(
-      `https://graph.facebook.com/v22.0/${postId}/comments`,
-      {
-        params: {
-          fields: 'id,text,username,timestamp',
-          access_token: ACCESS_TOKEN,
-          limit: 100
-        },
-        timeout: 10000
-      }
-    );
-
-    const newComments = response.data.data || [];
-    
-    // 2. Filter comments from last 5 minutes
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-    const recentComments = newComments.filter(comment => 
-      new Date(comment.timestamp) > fiveMinutesAgo
-    );
-
-    // 3. Save to MongoDB
-    const bulkOps = recentComments.map(comment => ({
-      updateOne: {
-        filter: { commentID: comment.id },
-        update: {
-          $set: {
-            postId,
-            username: comment.username,
-            commentID: comment.id,
-            commentText: comment.text,
-            commentTime: new Date(comment.timestamp)
-          },
-          $setOnInsert: { msgSentStatus: 'p' }
-        },
-        upsert: true
-      }
-    }));
-
-    if (bulkOps.length > 0) {
-      const result = await Comment.bulkWrite(bulkOps);
-      console.log(`💾 Saved ${result.upsertedCount} new comments`);
-      
-      // 4. Immediately trigger DM processing
-      await dispatchMessagesForPost(postId);
-    }
-    
-    return recentComments;
-  } catch (err) {
-    console.error(`❌ Error processing comments for post ${postId}:`, err.message);
-    return [];
-  }
-}
-
-// Modified dispatch for specific posts
-async function dispatchMessagesForPost(postId) {
-  try {
-    const pendingComments = await Comment.find({
-      postId,
-      msgSentStatus: 'p',
-      retryCount: { $lt: 3 }
-    });
-
-    const setting = await PostSetting.findOne({ postId });
-    if (!setting || !setting.keyword) return;
-
-    for (const comment of pendingComments) {
-      if (comment.commentText.toLowerCase().includes(setting.keyword.toLowerCase())) {
-        try {
-          await sendMessageWithButtons(
-            comment.commentID,
-            setting.message,
-            setting.buttonLinks
-          );
-
-          await Comment.updateOne(
-            { _id: comment._id },
-            { 
-              msgSentStatus: 's',
-              $inc: { retryCount: 1 }
-            }
-          );
-          console.log(`💬 DM sent for comment ${comment.commentID}`);
-        } catch (dmError) {
-          console.error(`❌ DM failed for ${comment.commentID}:`, dmError.message);
-          await Comment.updateOne(
-            { _id: comment._id },
-            { 
-              msgSentStatus: 'f',
-              $inc: { retryCount: 1 }
-            }
-          );
-        }
-      } else {
-        await Comment.updateOne(
-          { _id: comment._id },
-          { msgSentStatus: 'i' }
-        );
-      }
-    }
-  } catch (err) {
-    console.error(`❌ Error dispatching messages for post ${postId}:`, err);
-  }
-}
-
 // Server management
 function startScheduledJobs() {
   // Initial run
@@ -552,18 +376,10 @@ function startScheduledJobs() {
     fetchComments()
       .then(dispatchMessages)
       .catch(console.error);
-  }, 5 * 60 * 1000);
-
-  // Graceful shutdown
-  process.on('SIGTERM', () => {
-    clearInterval(interval);
-    server.close(() => {
-      mongoose.connection.close();
-      console.log('🛑 Server stopped gracefully');
-    });
-  });
+  }, 5 * 60 * 1000); // Every 5 minutes
 }
 
 const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running at https://instabot.brainyvoyage.com`);
+  startScheduledJobs();  // Start the scheduled jobs when the server is running
 });
