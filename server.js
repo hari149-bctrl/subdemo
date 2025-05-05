@@ -364,6 +364,35 @@ app.post('/api/retry/:commentId', async (req, res) => {
 });
 
 
+
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN; // Replace with your actual bot token
+const CHAT_ID = process.env.CHAT_ID; // Replace with your actual chat ID
+
+// Function to send message to Telegram
+async function sendTelegramNotification(message) {
+  try {
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+    await axios.post(url, {
+      chat_id: CHAT_ID,
+      text: message,
+    });
+  } catch (error) {
+    console.error('Error sending message to Telegram:', error);
+  }
+}
+
+// Ping route for GitHub Actions
+app.get('/ping', async (req, res) => {
+  const message = 'Ping received from GitHub Actions';
+  
+  // Log the ping and send Telegram notification
+  console.log(message);
+  await sendTelegramNotification(message);
+  
+  res.status(200).send('Pong');
+});
+
+
 // Server management
 function startScheduledJobs() {
   // Initial run
