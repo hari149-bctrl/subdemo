@@ -365,8 +365,8 @@ app.post('/api/retry/:commentId', async (req, res) => {
 
 
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN; // Replace with your actual bot token
-const CHAT_ID = process.env.CHAT_ID; // Replace with your actual chat ID
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const CHAT_ID = process.env.CHAT_ID;
 
 // Function to send message to Telegram
 async function sendTelegramNotification(message) {
@@ -381,17 +381,31 @@ async function sendTelegramNotification(message) {
   }
 }
 
-// Ping route for GitHub Actions
+// Ping route for monitoring
 app.get('/ping', async (req, res) => {
-  const message = 'Ping received from GitHub Actions';
-  
-  // Log the ping and send Telegram notification
+  const message = `Ping received at ${new Date().toISOString()}`;
   console.log(message);
-  await sendTelegramNotification(message);
-  
-  res.status(200).send('Pong');
+  res.status(200).json({
+    status: 'alive',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
 });
 
+const keepAlive = () => {
+  setInterval(async () => {
+    try {
+      await axios.get(`https://instabot.brainyvoyage.com/ping`);
+      let msgStatus = `Ping received at ${new Date().toISOString()} From code`;
+      await sendTelegramNotification(msgStatus);
+      console.log('🔄 Keepalive ping sent');
+    } catch (err) {
+      const errorMsg = `❌ Keepalive failed: ${err.message}`;
+      console.error(errorMsg);
+      await sendTelegramNotification(errorMsg);
+    }
+  }, 4.5 * 60 * 1000); // 4.5 minutes (under Render's 15m threshold)
+};
 
 // Server management
 function startScheduledJobs() {
@@ -401,7 +415,7 @@ function startScheduledJobs() {
     .catch(console.error);
 
   // Scheduled runs
-  const interval = setInterval(() => {
+  setInterval(() => {
     fetchComments()
       .then(dispatchMessages)
       .catch(console.error);
@@ -409,6 +423,7 @@ function startScheduledJobs() {
 }
 
 const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running at https://instabot.brainyvoyage.com`);
-  startScheduledJobs();  // Start the scheduled jobs when the server is running
+  console.log(`🚀 Server running on port ${PORT}`);
+  keepAlive(); // Start keepalive pings
+  startScheduledJobs(); // Start business logic jobs
 });
