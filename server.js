@@ -38,17 +38,9 @@ const PostSettingSchema = new mongoose.Schema({
   customCaption: { type: String, default: '' },
   keyword: { type: String, default: '' },
   message: { type: String, default: '' },
-  buttonLinks: {
-    type: [{
-      title: String,
-      url: String
-    }],
-    default: [
-      { title: "Apply Now", url: "https://brainyvoyage.com/hiring" },
-      { title: "Join WhatsApp", url: "https://WhatsApp.openinapp.co/Brainy_Voyage" },
-      { title: "Watch on YouTube", url: "https://YouTube.openinapp.co/Brainy_Voyage" }
-    ]
-  }
+  title: { type: String, default: '' },
+  link: { type: String, default: '' },
+  
 });
 
 const CommentSchema = new mongoose.Schema({
@@ -180,11 +172,12 @@ async function saveCommentsToMongo(allData) {
   }
 }
 
-async function sendMessageWithButtons(commentId, message, buttons) {
+async function sendMessageWithButtons(commentId, message, title, link) {
   try {
     console.log("commentId:",commentId)
     console.log("message:",message)
-    console.log("buttons:",buttons)
+    console.log("title:",title)
+    console.log("link:",link)
     const response = await axios.post(
       `https://graph.facebook.com/v22.0/${FB_PAGE_ID}/messages`,
       {
@@ -198,13 +191,18 @@ async function sendMessageWithButtons(commentId, message, buttons) {
               buttons: [
                 {
                   type: "web_url",
+                  url: link,
+                  title: title
+                },
+                {
+                  type: "web_url",
                   url: "https://WhatsApp.openinapp.co/Brainy_Voyage",
                   title: "Join WhatsApp"
                 },
                 {
                   type: "web_url",
                   url: "https://YouTube.openinapp.co/Brainy_Voyage",
-                  title: "Watch on YouTube"
+                  title: "Subcribe Us"
                 }
               ]
             }
@@ -251,14 +249,14 @@ async function dispatchMessages() {
           await sendMessageWithButtons(
             comment.commentID,
             setting.message,
-            setting.buttonLinks
+            setting.title,
+            setting.link
           );
 
           await Comment.updateOne(
             { _id: comment._id },
             { 
-              msgSentStatus: 's',
-              $inc: { retryCount: 1 }
+              msgSentStatus: 's'
             }
           );
           console.log(`✅ Sent message for comment ${comment.commentID}`);
@@ -296,10 +294,10 @@ app.get('/api/comments', async (req, res) => {
 
 app.post('/api/settings', async (req, res) => {
   try {
-    const { postId, customCaption, keyword, message, buttonLinks } = req.body;
+    const { postId, customCaption, keyword, message, title, link } = req.body;
     const updated = await PostSetting.findOneAndUpdate(
       { postId },
-      { customCaption, keyword, message, buttonLinks },
+      { customCaption, keyword, message, title, link },
       { upsert: true, new: true }
     );
     res.json(updated);
@@ -319,6 +317,8 @@ app.get('/api/settings/:postId', async (req, res) => {
     ]);
 
     if (!fullPost) {
+      const posts = await fetchInstagramPosts();
+      fullPost = posts.find(p => p.id === req.params.postId);
       return res.status(404).json({ error: 'Post not found' });
     }
 
@@ -348,7 +348,8 @@ app.post('/api/retry/:commentId', async (req, res) => {
     await sendMessageWithButtons(
       comment.commentID,
       setting.message,
-      setting.buttonLinks
+      setting.title,
+      setting.link
     );
 
     await Comment.updateOne(
@@ -425,5 +426,5 @@ function startScheduledJobs() {
 const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   keepAlive(); // Start keepalive pings
-  startScheduledJobs(); // Start business logic jobs
+  // startScheduledJobs(); 
 });
