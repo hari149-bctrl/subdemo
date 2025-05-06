@@ -409,6 +409,14 @@
           <label>Enter New Message Template:</label>
           <textarea class="form-control" id="messageInput" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
         </div>
+        <div class="form-group">
+          <label>Title for the link:</label>
+          <textarea class="form-control" id="btnTitle" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Link:</label>
+          <textarea class="form-control" id="btnLink" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
+        </div>
         <button class="btn btn-primary" id="updateKeywordBtn">Update Keyword</button>
         <button class="btn btn-primary" id="updateMessageBtn">Update Message</button>
         <button class="btn btn-success" id="updateAllBtn">Update All</button>
@@ -550,6 +558,8 @@
     document.getElementById('captionInput').value = settings?.customCaption || '';
     document.getElementById('keywordInput').value = settings?.keyword || '';
     document.getElementById('messageInput').value = settings?.message || '';
+    document.getElementById('btnTitle').value = settings?.title || '';
+    document.getElementById('btnLink').value = settings?.link || '';
   }
 
   // Render comments table
@@ -626,7 +636,7 @@
               <td class="status ${statusClass}">${status}</td>
               <td>
                 <button
-                  ${comment.status !== 'Failed' ? 'hidden' : ''}
+                  ${status !== 'Failed' ? 'hidden' : ''}
                   class="retry-btn" 
                   data-commentid="${comment.commentID}"
                   data-postid="${currentPost.postId}">
@@ -701,6 +711,8 @@
     const customCaption = document.getElementById('captionInput').value;
     const keyword = document.getElementById('keywordInput').value;
     const message = document.getElementById('messageInput').value;
+    const title = document.getElementById('btnTitle').value;
+    const link = document.getElementById('btnLink').value;
 
     try {
       showLoader(settingsForm);
@@ -709,7 +721,7 @@
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ postId, customCaption, keyword, message })
+        body: JSON.stringify({ postId, customCaption, keyword, message, title, link })
       });
       
       if (!response.ok) {
