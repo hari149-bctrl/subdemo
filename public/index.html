@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Brainy Voyage</title>
+  <link rel="shortcut icon" href="./images/bylogo-removebg-preview.png" type="image/x-icon">
   <style>
     :root {
       --primary: #3498db;
@@ -537,7 +538,6 @@
   if (!dataFetched) {
     try {
       const response = await fetch('/api/pages');
-      console.log(response)
       if (!response.ok) throw new Error("API Failed");
       
       const pages = await response.json();
@@ -567,7 +567,7 @@ async function getPageData() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const insta = await response.json();
-    console.log('Instagram Account Data:', insta.data);
+
 
     insta.data.forEach(info =>{
       document.querySelector('.media').textContent = info.media_count;
@@ -648,7 +648,6 @@ async function getPageData() {
       }
       
       const data = await response.json();
-      console.log(data)
       updateSettingsForm(data.settings);
       
       // Make sure we're passing both Instagram comments and DB comments
@@ -692,8 +691,6 @@ async function getPageData() {
 
   // Render comments table
   async function renderComments(instagramComments, dbComments) {
-    console.log("instagramComments:", instagramComments)
-    console.log("dbComments:", dbComments)
   if (!instagramComments?.length) {
     commentsList.innerHTML = '<p class="no-data">No comments found</p>';
     return;
@@ -756,8 +753,6 @@ async function getPageData() {
             }
           }
 
-          // const isFailed = status === 'Failed';
-          console.log(comment.hidden)
           return `
             <tr>
               <td>${comment.commentUsername}</td>
@@ -864,7 +859,6 @@ function sendReply(){
         showToast('Reply sent', 'success');
       }
       catch(err){
-        console.log(err);
         showToast('Failed to reply for a comment', 'error');
       }
     })
@@ -965,7 +959,6 @@ function setupVisibilityToggles() {
           const response = await fetch(`/api/retry/${commentID}`, {
             method: 'POST'
           });
-          console.log(response);
 
 
           if (!response.ok) {

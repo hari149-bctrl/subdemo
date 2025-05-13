@@ -231,10 +231,6 @@ async function saveCommentsToMongo(allData) {
 
 async function sendMessageWithButtons(commentId, message, title, link) {
   try {
-    console.log("commentId:",commentId)
-    console.log("message:",message)
-    console.log("title:",title)
-    console.log("link:",link)
     const response = await axios.post(
       `https://graph.facebook.com/v22.0/${FB_PAGE_ID}/messages`,
       {
@@ -349,8 +345,6 @@ app.get('/webhook', (req, res) => {
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
 
-  console.log("mode:", mode)
-  console.log("token:", token)
   if (mode && token === VERIFY_TOKEN) {
     console.log("verified");
     res.status(200).send(challenge);
@@ -475,8 +469,7 @@ app.get('/api/instagram-accounts', async (req, res) => {
       }
     );
 
-    // Send data back to the client
-    console.log(response.data);
+    // Send data back to the clie
     res.json(response.data);
   } catch (err) {
     console.error('API Error:', err.response?.data || err.message);
@@ -510,7 +503,6 @@ app.get('/api/comments', async (req, res) => {
 app.post('/api/reply/:commentID', async(req,res) =>{
   const cmId = req.params.commentID;
   const replyMsg = req.body.replyMessage;
-  console.log(cmId, replyMsg);
   try {
     const response = await axios.post(
       `https://graph.facebook.com/v22.0/${cmId}/replies`,
@@ -599,7 +591,6 @@ app.post('/api/settings', async (req, res) => {
 app.get('/api/pages', async(req,res) => {
   try{
     const response = await axios.get(`https://graph.facebook.com/v22.0/${FB_PAGE_ID}?fields=access_token,name,instagram_business_account&access_token=${ACCESS_TOKEN}`);
-    console.log([response.data])
     res.json([response.data]);
   }catch(err){
     console.error('Error fetching pages:', err);
@@ -689,7 +680,7 @@ async function sendTelegramNotification(message) {
 // Ping route for monitoring
 app.get('/ping', async (req, res) => {
   const message = `Ping received at ${new Date().toISOString()}`;
-  console.log(message);
+
   res.status(200).json({
     status: 'alive',
     uptime: process.uptime(),
