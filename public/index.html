@@ -3,210 +3,1083 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Instagram Post Dashboard</title>
+  <title>Brainy Voyage</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
+    :root {
+      --primary: #3498db;
+      --success: #2ecc71;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --gray: #95a5a6;
+      --dark: #2c3e50;
+      --light: #ecf0f1;
+    }
+    * {
       margin: 0;
-      padding: 20px;
-      background-color: #f5f5f5;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
+    body {
+      display: flex;
+      height: 100vh;
+      background-color: #f5f7fa;
+    }
+    .sidebar {
+      width: 350px;
       background: white;
+      border-right: 1px solid #ddd;
+      overflow-y: auto;
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-    h1 {
-      color: #333;
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .header {
+      padding: 20px;
+      background: white;
+      border-bottom: 1px solid #ddd;
+    }
+    .header h1 {
+      color: var(--dark);
+      margin-bottom: 10px;
+    }
+    .stats-bar {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      flex: 1;
       text-align: center;
     }
-    .posts-list {
-      margin-top: 20px;
+    .stat-card h3 {
+      color: var(--gray);
+      font-size: 14px;
+      margin-bottom: 5px;
     }
-    .post-card {
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 15px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    .post-card h3 {
-      margin-top: 0;
-      color: #333;
-    }
-    .post-card p {
-      margin: 5px 0;
-      color: #666;
-    }
-    .view-details {
-      background: #3897f0;
-      color: white;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    .view-details:hover {
-      background: #2684f0;
+    .stat-card p {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--dark);
     }
     .post-details {
-      display: none;
-      margin-top: 20px;
-      padding: 15px;
-      background: #f9f9f9;
-      border-radius: 8px;
-      border: 1px solid #eee;
-    }
-    .comment {
-      padding: 10px;
-      margin: 10px 0;
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
       background: white;
-      border-radius: 4px;
-      border: 1px solid #eee;
     }
-    .keyword-display {
-      display: inline-block;
-      padding: 3px 8px;
-      background: #e0f7fa;
+    .post-info {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #eee;
+    }
+    .post-info p {
+      margin-bottom: 8px;
+    }
+    .settings-form {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    .form-control {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
       border-radius: 4px;
-      color: #00796b;
+    }
+    .btn {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+    .btn-warning {
+      background: var(--warning);
+      color: white;
+    }
+    .comments-container {
+      margin-top: 20px;
+    }
+    .comment-item {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .comment-user {
+      font-weight: bold;
+      color: var(--primary);
+    }
+    .comment-status {
       font-weight: bold;
     }
+    .status-sent {
+      color: var(--success);
+    }
+    .status-failed {
+      color: var(--danger);
+    }
+    .status-pending {
+      color: var(--warning);
+    }
+    .status-ignored {
+      color: var(--gray);
+    }
+    .search-bar {
+      margin-bottom: 20px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .post-item {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .post-item:hover {
+      background: #f5f7fa;
+    }
+    .post-item.active {
+      background: #e3f2fd;
+      border-left: 3px solid var(--primary);
+    }
+    .post-caption {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 5px 0;
+    }
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+      z-index: 1000;
+      animation: slideIn 0.3s, fadeOut 0.5s 2s forwards;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+    @keyframes fadeOut {
+      to { opacity: 0; }
+    }
+    .logs-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1001;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .logs-content {
+      background: white;
+      width: 80%;
+      height: 80%;
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .logs-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+    .logs-body {
+      flex: 1;
+      overflow-y: auto;
+      background: #f5f5f5;
+      padding: 15px;
+      font-family: monospace;
+    }
+    .log-entry {
+      margin-bottom: 5px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #eee;
+    }
+    .log-timestamp {
+      color: var(--gray);
+      margin-right: 10px;
+    }
+    .log-message {
+      color: var(--dark);
+    }
+    .error {
+      color: var(--danger);
+    }
+    .post{
+      padding: 10px;
+      border-radius: 3px;
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    }
+    .post:hover{
+      box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    }
+    #postsContainer{
+      display: flex;
+      flex-direction: column;
+      row-gap: 10px;
+    }
+    .comments-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .comments-table th, .comments-table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+
+    .comments-table th {
+      background-color: #f4f4f4;
+    }
+    .retry-btn, .btnInfo{
+      border: none;
+      width: fit-content;
+      height: fit-content;
+      background-color: transparent;
+    }
+    .action{
+      padding-right: 0px;
+      display: flex;
+      flex-direction: row;
+      column-gap: 20px;
+      align-items: center;
+      justify-content: center;
+      padding-left: 0px;
+    }
+    #fetchData{
+      padding: 10px 20px;
+      border-radius: 8px;
+      background-color: var(--primary);
+      color: white;
+      font-size: 20px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+    
+    #toast-container {
+      position: fixed;
+      top: 20px;          /* Position at the top */
+      right: 20px;        /* Position at the right */
+      display: flex;
+      flex-direction: column;
+      gap: 10px;          /* Spacing between toasts */
+      z-index: 1000;
+    }
+
+    .toast {
+      padding: 12px 24px;
+      border-radius: 4px;
+      color: white;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      transform: translateX(100%); /* Slide in from right */
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(0); /* Fully visible */
+    }
+
+    /* Type-specific styles */
+    .toast.info { background-color: #3498db; }
+    .toast.success { background-color: #2ecc71; }
+    .toast.error { background-color: #e74c3c; }
+    .toast.warning { background-color: #f39c12; color: #333; }
+
+
+
+
+    .pageData{
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-evenly;
+    }
+    .profile-stats {
+      display: flex;
+      justify-content: center;
+      gap: 50px;
+      padding: 20px;
+      background: var(--dark);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .stat-item {
+      font-size: 16px;
+      color: #cdcaca;
+      text-align: center;
+      position: relative;
+    }
+
+    .stat-item span {
+      font-weight: bold;
+      color: #ffffff;
+      margin-left: 4px;
+    }
+
+    .website-link {
+      color: #2be2dfd9;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border-bottom: 2px solid transparent;
+    }
+
+    .website-link:hover {
+      border-bottom: 2px solid #7af8f6;
+      color: #00fffb;
+    }
+
+
+
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Instagram Post Dashboard</h1>
-    
-    <div class="keyword-control">
-      <h3>Current Keyword: <span class="keyword-display" id="current-keyword">job</span></h3>
-      <input type="text" id="new-keyword" placeholder="Enter new keyword">
-      <button id="update-keyword">Update Keyword</button>
+  <div class="sidebar">
+    <!-- <button><img src="./images/refresh.png"></button> -->
+    <h2>Pages linked to bussiness</h2>
+    <select id="pageDropdown" style="
+    height: 30px;
+    margin: 10px 0px;
+    width: 100%;">
+      <option value="">Select a page</option>
+    </select>
+    <h2>Instagram Posts</h2>
+    <div class="search-bar">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search by caption...">
     </div>
-    
-    <div class="posts-list" id="posts-list">
-      <!-- Posts will be loaded here -->
+    <!-- Here comes the post container left side -->
+    <div id="postsContainer"></div>
+  </div>
+
+  
+
+    <div class="post-details">
+      <div class="pageData profile-stats">
+        <div class="stat-item">Total Posts: <span class="media"></span></div>
+        <div class="stat-item">Followers: <span class="followers"></span></div>
+        <div class="stat-item">Following: <span class="following"></span></div>
+        <div class="stat-item">
+          <a href="#" class="website-link websiteLink" target="_blank">Website</a>
+        </div>
+      </div>
+      <!-- <div id="toast" class="toast"></div> -->
+      <div id="toast-container"></div>
+      <div class="main-content">
+        <div class="header">
+          <h1>Brainy Voyage</h1> 
+          <div class="stats-bar">
+            <div class="stat-card">
+              <h3>Total Comments</h3>
+              <p id="totalComments">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Messages Sent</h3>
+              <p id="messagesSent">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Messages Failed</h3>
+              <p id="messagesFailed">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Messages Pending</h3>
+              <p id="messagesPending">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Likes</h3>
+              <p id="totalLikes">0</p>
+            </div>
+          </div>
+        </div>
+      <div id="notificationContainer"></div>
+      
+      <div id="postInfo" class="post-info" style="display: none;">
+        <p><strong>ID:</strong> <span id="postId"></span></p>
+        <p><strong>Caption:</strong> <span id="postCaption"></span></p>
+        <p><strong>Permalink:</strong> <a id="postPermalink" target="_blank"></a></p>
+        <p><strong>Time:</strong> <span id="postTime"></span></p>
+      </div>
+
+      <div class="settings-form" id="settingsForm" style="display: none;">
+        <h3>DM Settings</h3>
+        <!-- <button id="fetchData">Fetch 🔃</button> -->
+        <div class="form-group">
+          <label>Current caption:</label>
+          <p id="currentCaption">none</p>
+        </div>
+        <div class="form-group">
+          <label>Enter New Custom caption:</label>
+          <input type="text" class="form-control" id="captionInput" placeholder="Enter custom caption">
+        </div>
+        <div class="form-group">
+          <label>Current Keyword:</label>
+          <p id="currentKeyword">none</p>
+        </div>
+        <div class="form-group">
+          <label>Enter New Keyword:</label>
+          <input type="text" class="form-control" id="keywordInput" placeholder="Enter keyword to trigger DM">
+        </div>
+        <div class="form-group">
+          <label>Current Message Template:</label>
+          <p id="currentMessage">none</p>
+        </div>
+        <div class="form-group">
+          <label>Enter New Message Template:</label>
+          <textarea class="form-control" id="messageInput" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Title for the link:</label>
+          <textarea class="form-control" id="btnTitle" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Link:</label>
+          <textarea class="form-control" id="btnLink" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
+        </div>
+        <button class="btn btn-primary" id="updateKeywordBtn">Update Keyword</button>
+        <button class="btn btn-primary" id="updateMessageBtn">Update Message</button>
+        <button class="btn btn-success" id="updateAllBtn">Update All</button>
+      </div>
+
+      <div class="comments-container" id="commentsContainer" style="display: none;">
+        <h3>Comments</h3>
+        <div id="commentsList"></div>
+      </div>
     </div>
   </div>
 
+  <div id="logsModal" class="logs-modal" style="display: none;">
+    <div class="logs-content">
+      <div class="logs-header">
+        <h2>Activity Logs</h2>
+        <div>
+          <button class="btn btn-primary" id="clearLogsBtn">Clear Logs</button>
+          <button class="btn btn-danger" id="closeLogsBtn">Close</button>
+        </div>
+      </div>
+      <div class="logs-body" id="logsBody"></div>
+    </div>
+  </div>
+
+ 
+  
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      loadPosts();
-      
-      document.getElementById('update-keyword').addEventListener('click', updateKeyword);
-    });
+    // DOM Elements
+  const postsContainer = document.getElementById('postsContainer');
+  const commentsList = document.getElementById('commentsList');
+  const postInfo = document.getElementById('postInfo');
+  const settingsForm = document.getElementById('settingsForm');
+  const commentsContainer = document.getElementById('commentsContainer');
+  const toast = document.getElementById('toast');
 
-    async function loadPosts() {
-      try {
-        const response = await fetch('/api/posts');
-        const posts = await response.json();
-        
-        const postsList = document.getElementById('posts-list');
-        postsList.innerHTML = '';
-        
-        if (posts.length === 0) {
-          postsList.innerHTML = '<p>No posts found.</p>';
-          return;
-        }
-        
-        posts.forEach(post => {
-          const postCard = document.createElement('div');
-          postCard.className = 'post-card';
-          postCard.innerHTML = `
-            <h3>${post.caption.substring(0, 50)}${post.caption.length > 50 ? '...' : ''}</h3>
-            <p><strong>ID:</strong> ${post.id}</p>
-            <p><strong>Posted:</strong> ${post.timestamp}</p>
-            <button class="view-details" data-post-id="${post.id}">View Details</button>
-            <div class="post-details" id="details-${post.id}"></div>
+  // State
+  let currentPost = null;
+
+  // Load posts on page load
+  window.addEventListener('DOMContentLoaded', loadPosts);
+
+  let dataFetched = false;
+  document.getElementById('pageDropdown').addEventListener('focus', async function () {
+  const dropdown = document.getElementById('pageDropdown'); // Define here
+  
+  if (!dataFetched) {
+    try {
+      const response = await fetch('/api/pages');
+      console.log(response)
+      if (!response.ok) throw new Error("API Failed");
+      
+      const pages = await response.json();
+      dropdown.innerHTML = '<option value="">Select a page</option>';
+      
+      pages.forEach(page => {
+        const option = document.createElement('option');
+        option.value = page.id;
+        option.textContent = page.name;
+        dropdown.appendChild(option);
+      });
+      
+      dataFetched = true;
+    } catch (error) {
+      console.error("Fetch error:", error);
+      dropdown.innerHTML = '<option value="" disabled>Error loading pages</option>';
+    }
+  }
+});
+
+
+
+async function getPageData() {
+  try {
+    const response = await fetch('/api/instagram-accounts');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const insta = await response.json();
+    console.log('Instagram Account Data:', insta.data);
+
+    insta.data.forEach(info =>{
+      document.querySelector('.media').textContent = info.media_count;
+      document.querySelector('.followers').textContent = info.followers_count;
+      document.querySelector('.following').textContent = info.follows_count;
+      document.querySelector('.websiteLink').href = info.website;
+    })
+    // document.getElementById('instagram-data').innerText = JSON.stringify(data, null, 2);
+    // return data; // Optional: return the data if needed elsewhere
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    // Optional: display error in UI
+    // document.getElementById('instagram-data').innerText = 'Error loading Instagram data';
+    throw error; // Re-throw if you want calling code to handle it
+  }
+}
+
+  // Function to load posts
+  async function loadPosts() {
+    try {
+      showLoader(postsContainer);
+      const response = await fetch('/api/comments');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch posts');
+      }
+      
+      const posts = await response.json();
+      postsContainer.innerHTML = '';
+      
+      if (posts.length === 0) {
+        postsContainer.innerHTML = '<p class="no-data">No posts found</p>';
+        return;
+      }
+
+      posts.forEach(post => {
+        const postElement = createPostElement(post);
+        postsContainer.appendChild(postElement);
+      });
+      getPageData();
+    } catch (error) {
+      console.error('Error loading posts:', error);
+      showToast('Failed to load posts', 'error');
+      postsContainer.innerHTML = '<p class="error">Error loading posts</p>';
+    } finally {
+      hideLoader(postsContainer);
+    }
+  }
+
+  // Create post element
+  function createPostElement(post) {
+    const div = document.createElement('div');
+    div.className = 'post';
+    div.innerHTML = `
+      <p class="user">${post.postId}</p>
+      <p class="caption">${post.caption || 'No caption'}</p>
+      <p class="timestamp">${new Date(post.timestamp).toLocaleString()}</p>
+      <div class="stats">
+        <span>💬 ${post.comments_count || 0}</span>
+        <span>❤️ ${post.like_count || 0}</span>
+      </div>
+    `;
+    div.addEventListener('click', () => handlePostClick(post));
+    return div;
+  }
+
+  
+  
+  async function handlePostClick(post) {
+    currentPost = post;
+    try {
+      showLoader(commentsList);
+      updatePostInfo(post);
+      
+      const response = await fetch(`/api/settings/${post.postId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch post details');
+      }
+      
+      const data = await response.json();
+      console.log(data)
+      updateSettingsForm(data.settings);
+      
+      // Make sure we're passing both Instagram comments and DB comments
+      renderComments(data.post?.comments || [], data.mComments || []);
+      
+      showElements([postInfo, settingsForm, commentsContainer]);
+    } catch (error) {
+      console.error('Error loading post details:', error);
+      showToast('Failed to load post details', 'error');
+      commentsList.innerHTML = '<p class="error">Error loading comments</p>';
+    } finally {
+      hideLoader(commentsList);
+    }
+  }
+
+
+  // Update post info section
+  function updatePostInfo(post) {
+    document.getElementById('postId').textContent = post.postId;
+    document.getElementById('postCaption').textContent = post.caption || 'No caption';
+    document.getElementById('postPermalink').href = post.permalink || '#';
+    document.getElementById('postPermalink').textContent = post.permalink ? 'View Post' : 'No link';
+    document.getElementById('postTime').textContent = new Date(post.timestamp).toLocaleString();
+    document.getElementById('totalComments').textContent = post.comments_count || 0;
+    document.getElementById('totalLikes').textContent = post.like_count || 0;
+  }
+
+  // Update settings form
+  function updateSettingsForm(settings) {
+    document.getElementById('currentCaption').textContent = settings?.customCaption || 'none';
+    document.getElementById('currentKeyword').textContent = settings?.keyword || 'none';
+    document.getElementById('currentMessage').textContent = settings?.message || 'none';
+    
+    // Set form values
+    document.getElementById('captionInput').value = settings?.customCaption || '';
+    document.getElementById('keywordInput').value = settings?.keyword || '';
+    document.getElementById('messageInput').value = settings?.message || '';
+    document.getElementById('btnTitle').value = settings?.title || '';
+    document.getElementById('btnLink').value = settings?.link || '';
+  }
+
+  // Render comments table
+  async function renderComments(instagramComments, dbComments) {
+    console.log("instagramComments:", instagramComments)
+    console.log("dbComments:", dbComments)
+  if (!instagramComments?.length) {
+    commentsList.innerHTML = '<p class="no-data">No comments found</p>';
+    return;
+  }
+
+  // Create a map of DB comments for quick lookup
+  const dbCommentsMap = new Map();
+  dbComments.forEach(dbComment => {
+    dbCommentsMap.set(dbComment.commentID, dbComment);
+  });
+
+  const now = new Date();
+  const sevenDays = 7 * 24 * 60 * 60 * 1000;
+
+  const tableHTML = `
+    <table class="comments-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Comment</th>
+          <th>Time</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${instagramComments.map(comment => {
+          const dbComment = dbCommentsMap.get(comment.commentID);
+          const commentTime = new Date(comment.commentTime);
+          const isExpired = now - commentTime > sevenDays;
+          
+          let status = 'New';
+          let statusClass = 'new';
+          
+          if (isExpired) {
+            status = 'Expired';
+            statusClass = 'expired';
+          } else if (dbComment) {
+            // Get status from MongoDB record
+            switch (dbComment.msgSentStatus) {
+              case 's':
+                status = 'Sent';
+                statusClass = 'sent';
+                break;
+              case 'p':
+                status = 'Pending';
+                statusClass = 'pending';
+                break;
+              case 'i':
+                status = 'Ignored';
+                statusClass = 'ignored';
+                break;
+              case 'f':
+                status = 'Failed';
+                statusClass = 'failed';
+                break;
+              default:
+                status = 'Unknown';
+                statusClass = 'unknown';
+            }
+          }
+
+          // const isFailed = status === 'Failed';
+          console.log(comment.hidden)
+          return `
+            <tr>
+              <td>${comment.commentUsername}</td>
+              <td>${comment.commentText}</td>
+              <td>${commentTime.toLocaleString()}</td>
+              <td class="status ${statusClass}">${status}</td>
+              <td class="action">
+                <button
+                  ${status !== 'Failed' ? 'hidden' : ''}
+                  class="retry-btn"
+                  title="retry" 
+                  data-commentid="${comment.commentID}"
+                  data-postid="${currentPost.postId}">
+                  <img src="./images/refresh.png">
+                </button>
+                <button
+                  ${status !== 'Pending' ? 'hidden' : ''}
+                  class="retry-btn"
+                  title="send" 
+                  data-commentid="${comment.commentID}"
+                  data-postid="${currentPost.postId}">
+                  <img src="./images/send.png">
+                </button>
+                <button
+                  ${status !== 'Sent' ? 'hidden' : ''}
+                  class="btnInfo successBtn"
+                  title="Message sent">
+                  <img src="./images/success.png">
+                </button>
+                <button class="btnInfo visibleBtn" title="comment-visible" ${comment.hidden == false ? '' : 'hidden'} data-commentid="${comment.commentID}"data-postid="${currentPost.postId}"><img src="./images/view.png"></button>
+                <button class="btnInfo hideBtn" title="Comment-hidden" ${comment.hidden == true ? '' : 'hidden'} data-commentid="${comment.commentID}"data-postid="${currentPost.postId}"><img src="./images/hide.png"></button>
+                <button class="btnInfo cdeleteBtn" title="delete" data-commentid="${comment.commentID}"><img src="./images/delete.png"></button>
+                <button class="btnInfo replyBtn" title="reply" data-commentid="${comment.commentID}"><img src="./images/reply.png"></button>
+              </td>
+            </tr>
           `;
-          postsList.appendChild(postCard);
-          
-          // Add click handler for the view details button
-          // Inside loadPosts() - change view-details button handler
-            postCard.querySelector('.view-details').addEventListener('click', function () {
-            const postId = this.getAttribute('data-post-id');
-            window.open(`/details.html?id=${postId}`);
-            });
+        }).join('')}
+      </tbody>
+    </table>
+  `;
 
-        });
-      } catch (error) {
-        console.error('Error loading posts:', error);
-        alert('Failed to load posts. Check console for details.');
+  // Count each status
+  let sent = 0, pending = 0, failed = 0, ignored = 0, expired = 0, newStatus = 0;
+
+  instagramComments.forEach(comment => {
+    const dbComment = dbCommentsMap.get(comment.commentID);
+    const commentTime = new Date(comment.commentTime);
+    const isExpired = now - commentTime > sevenDays;
+
+    if (isExpired && !dbComment) {
+      expired++;
+    } else if (dbComment) {
+      switch (dbComment.msgSentStatus) {
+        case 's': sent++; break;
+        case 'p': pending++; break;
+        case 'f': failed++; break;
+        case 'i': ignored++; break;
+        default: break;
       }
+    } else {
+      newStatus++;
     }
+  });
 
-    async function togglePostDetails(postId) {
-      const detailsDiv = document.getElementById(`details-${postId}`);
-      
-      if (detailsDiv.style.display === 'block') {
-        detailsDiv.style.display = 'none';
-        return;
-      }
-      
-      try {
-        const response = await fetch(`/api/posts/${postId}`);
-        const postDetails = await response.json();
-        
-        detailsDiv.innerHTML = `
-          <h3>Post Details</h3>
-          <p><strong>Full Caption:</strong> ${postDetails.caption}</p>
-          <p><strong>Keyword:</strong> <span class="keyword-display">${postDetails.keyword}</span></p>
-          <p><strong>Link:</strong> <a href="${postDetails.link}" target="_blank">View on Instagram</a></p>
-          
-          <h4>Matching Comments (${postDetails.comments.length})</h4>
-          ${postDetails.comments.length > 0 ? 
-            postDetails.comments.map(comment => `
-              <div class="comment">
-                <p><strong>${comment.username}</strong> (${comment.timestamp})</p>
-                <p>${comment.text}</p>
-              </div>
-            `).join('') : 
-            '<p>No comments match the current keyword.</p>'}
-        `;
-        
-        detailsDiv.style.display = 'block';
-      } catch (error) {
-        console.error('Error loading post details:', error);
-        detailsDiv.innerHTML = '<p>Failed to load post details.</p>';
-        detailsDiv.style.display = 'block';
-      }
-    }
+  document.querySelector('#messagesPending').textContent = pending;
+  document.querySelector('#messagesSent').textContent = sent;
+  document.querySelector('#messagesFailed').textContent = failed;
 
-    async function updateKeyword() {
-      const newKeyword = document.getElementById('new-keyword').value.trim();
+  
+  commentsList.innerHTML = tableHTML;
+  setupRetryButtons();
+  setupVisibilityToggles();
+  setupDeleteButtons();
+  sendReply();
+  sentBtn();
+}
+
+function sentBtn(){
+  document.querySelectorAll('.successBtn').forEach(button => {
+    button.addEventListener('click', () => {
+      showToast('Message already sent', 'error');
+    })
+  })
+}
+
+
+function sendReply(){
+  document.querySelectorAll('.replyBtn').forEach(button => {
+    button.addEventListener('click', async () => {
+      const commentID = button.dataset.commentid;
+      const replyMessage = '✅ Check your DM';
       
-      if (!newKeyword) {
-        alert('Please enter a keyword');
-        return;
-      }
-      
-      try {
-        const response = await fetch('/api/update-keyword', {
+      try{
+        const response = await fetch(`/api/reply/${commentID}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ keyword: newKeyword })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-          document.getElementById('current-keyword').textContent = newKeyword;
-          loadPosts();
-        } else {
-          alert(result.message || 'Failed to update keyword');
-        }
-      } catch (error) {
-        console.error('Error updating keyword:', error);
-        alert('Failed to update keyword. Check console for details.');
+          body: JSON.stringify({ replyMessage })
+        })
+
+        if (!response.ok) throw new Error('Reply failed');
+
+        showToast('Reply sent', 'success');
       }
+      catch(err){
+        console.log(err);
+        showToast('Failed to reply for a comment', 'error');
+      }
+    })
+  })
+}
+
+function setupDeleteButtons() {
+  document.querySelectorAll('.cdeleteBtn').forEach(button => {
+    button.addEventListener('click', async () => {
+      const commentID = button.dataset.commentid;
+
+      if (!confirm('Are you sure you want to delete this comment?')) return;
+
+      try {
+        button.disabled = true;
+        button.innerHTML = '<img src="./images/sending.png">';
+
+        const res = await fetch(`/api/delete/${commentID}`, {
+          method: 'DELETE'
+        });
+
+        if (!res.ok) throw new Error('Delete failed');
+
+        showToast('Comment deleted', 'success');
+
+        // Optional: Remove the row from the table
+        button.closest('tr').remove();
+      } catch (err) {
+        showToast('Failed to delete comment', 'error');
+        console.error(err);
+      }
+    });
+  });
+}
+
+
+function setupVisibilityToggles() {
+  const toggleButtons = [
+    { selector: '.visibleBtn', hide: true, successIcon: './images/hide.png', toastMsg: 'Comment hidden' },
+    { selector: '.hideBtn', hide: false, successIcon: './images/view.png', toastMsg: 'Comment unhidden' }
+  ];
+
+  toggleButtons.forEach(({ selector, hide, successIcon, toastMsg }) => {
+    document.querySelectorAll(selector).forEach(button => {
+      button.addEventListener('click', async () => {
+        const commentID = button.dataset.commentid;
+        button.disabled = true;
+        button.textContent = '';
+        const img = document.createElement('img');
+        img.src = './images/sending.png';
+        button.appendChild(img);
+
+        try {
+          const res = await fetch(`/api/hide/${commentID}?hide=${hide}`, { method: 'POST' });
+          if (!res.ok) throw new Error('Request failed');
+          showToast(toastMsg, 'success');
+          button.textContent = '';
+          img.src = successIcon;
+          button.appendChild(img);
+        } catch (err) {
+          showToast('Failed to update visibility', 'error');
+          console.error(err);
+        }
+      });
+    });
+  });
+}
+
+
+
+  // Get status text
+  function getStatusText(statusCode) {
+    switch (statusCode) {
+      case 's': return 'Sent';
+      case 'p': return 'Pending';
+      case 'i': return 'Ignored';
+      case 'f': return 'Failed';
+      case 'e': return 'Expired';
+      default: return 'Unknown';
     }
+  }
+
+
+  // Setup retry buttons
+  function setupRetryButtons() {
+    document.querySelectorAll('.retry-btn').forEach(button => {
+      button.addEventListener('click', async () => {
+        const commentID = button.dataset.commentid;
+        const postId = button.dataset.postid;
+        
+        try {
+          button.disabled = true;
+          button.textContent = '';
+          const img = document.createElement('img');
+          img.src = './images/sending.png'; // Replace with your image path
+          button.appendChild(img);
+
+          const response = await fetch(`/api/retry/${commentID}`, {
+            method: 'POST'
+          });
+          console.log(response);
+
+
+          if (!response.ok) {
+            throw new Error('Retry failed');
+          }
+          
+          showToast('Message sent successfully', 'success');
+          button.textContent = '';
+          img.src = './images/success.png'; // Replace with your image path
+          button.appendChild(img);
+          button.classList.add('success');
+          
+          // Update status in UI
+          const statusCell = button.closest('tr').querySelector('.status');
+          statusCell.textContent = 'Sent';
+          statusCell.className = 'status sent';
+          
+        } catch (error) {
+          console.error('Retry error:', error);
+          showToast('Failed to resend message', 'error');
+          button.textContent = '';
+          const img = document.createElement('img');
+          img.src = './images/retry-failed.png'; // Replace with your image path
+          
+          button.appendChild(img);
+          button.disabled = false;
+          setTimeout(() => {
+            button.textContent = ''; // Clear the text
+
+            const img = document.createElement('img');
+            img.src = './images/refresh.png'; // Replace with your image path
+            button.appendChild(img);
+          }, 3000);
+        }
+      });
+    });
+  }
+
+
+
+
+
+  
+  // Save post settings
+  async function savePostSettings() {
+    const postId = document.getElementById('postId').textContent;
+    const customCaption = document.getElementById('captionInput').value;
+    const keyword = document.getElementById('keywordInput').value;
+    const message = document.getElementById('messageInput').value;
+    const title = document.getElementById('btnTitle').value;
+    const link = document.getElementById('btnLink').value;
+
+    try {
+      showLoader(settingsForm);
+      const response = await fetch('/api/settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ postId, customCaption, keyword, message, title, link })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save settings');
+      }
+      
+      const result = await response.json();
+      showToast('Settings saved successfully', 'success');
+      updateSettingsForm(result.data);
+      
+      // Refresh comments to show updated statuses
+      if (currentPost) {
+        await handlePostClick(currentPost);
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      showToast('Failed to save settings', 'error');
+    } finally {
+      hideLoader(settingsForm);
+    }
+  }
+
+  // Event listeners
+  document.getElementById('updateAllBtn').addEventListener('click', savePostSettings);
+
+  // Helper functions
+  function showLoader(element) {
+    element.classList.add('loading');
+  }
+
+  function hideLoader(element) {
+    element.classList.remove('loading');
+  }
+
+  function showElements(elements) {
+    elements.forEach(el => el.style.display = 'block');
+  }
+
+  function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast show ${type}`;
+    toast.textContent = message;
+
+    // Append the new toast to the container
+    toastContainer.appendChild(toast);
+
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      toast.classList.remove('show');
+      toast.addEventListener('transitionend', () => toast.remove()); // Remove after fade-out
+    }, 3000);
+  }
   </script>
+
 </body>
 </html>
