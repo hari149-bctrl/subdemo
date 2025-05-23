@@ -978,7 +978,6 @@
           fbloginBtn.classList.add('hidden');
           fblogoutBtn.classList.remove('hidden');
           
-          
           let selectedPageId;
           const dropdown = document.getElementById('pageDropdown'); // Define here
           dropdown.addEventListener('change', function () {
@@ -1005,12 +1004,14 @@
             
             dataFetched = true;
           } catch (error) {
+            
             console.error("Fetch error:", error);
             dropdown.innerHTML = '<option value="" disabled>Error loading pages</option>';
           }
 
           
         }catch(err){
+          hideLoader();
           showToast("Error Occured while login. Please try later", "error");
         }
       }
