@@ -23,8 +23,10 @@
     }
     body {
       display: flex;
+      flex-direction: column;
       height: 100vh;
       background-color: #f5f7fa;
+      overflow: hidden;
     }
     .sidebar {
       width: 350px;
@@ -384,680 +386,1214 @@
       color: #00fffb;
     }
 
+    .topBar{
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      border-radius: 5px;
+      padding: 5px 10px;
+      margin: 5px;
+      background-color: var(--dark);
+    }
+
+    .topBarLeft{
+      display: flex;
+      color: white;
+      align-items: center;
+      column-gap: 10px;
+      justify-content: space-between;
+      /* width: 100%; */
+    }
+    .topImages{
+      border-radius: 100%;
+      width: 40px;
+      height: 40px;
+      border: 2px solid var(--warning);
+    }
+    .lines{
+      display: flex;
+      align-items: center;
+    }
+    main{
+      display: flex;
+      height: 90vh;
+    }
+    .linesGreen{
+      color: #75FB4C;
+      font-size: 20px;
+    }
+    .linesRed{
+      color: rgb(182, 180, 180);
+      font-size: 20px;
+    }
+    .withCross{
+      display:flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .closeImage{
+      margin-right: 5px;
+    }
+    
+    .worldLogoContainer{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      column-gap: 10px;
+    }
+    .fbloginBtn, .fblogoutBtn{
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      height: 30px;
+    }
+    .highfens {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .chevron-right {
+      width: 10px;
+      height: 10px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(-45deg);
+      padding: 5px;
+      opacity: 0.3;
+      animation: glow 2s infinite;
+      animation-fill-mode: forwards;
+    }
+
+    .chevron-right:nth-child(1) {
+      animation-delay: 0s;
+    }
+    .chevron-right:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .chevron-right:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    .chevron-right:nth-child(4) {
+      animation-delay: 0.6s;
+    }
+    .chevron-right:nth-child(5) {
+      animation-delay: 0.8s;
+    }
+
+    @keyframes glow {
+      0%, 100% {
+        opacity: 0.3;
+        border-color: white;
+        box-shadow: none;
+      }
+      50% {
+        opacity: 1;
+        border-color: #00aaff;
+        box-shadow: 0 0 8px #00ccff;
+      }
+    }
+
+    .chevron-left {
+      width: 10px;
+      height: 10px;
+      border: solid white;
+      border-width: 2px 0 0 2px;
+      transform: rotate(-45deg);
+      padding: 5px;
+      opacity: 0.3;
+      animation: glow-red 2s infinite;
+      animation-fill-mode: forwards;
+    }
+
+    .chevron-left:nth-child(5) {
+      animation-delay: 0s;
+    }
+    .chevron-left:nth-child(4) {
+      animation-delay: 0.2s;
+    }
+    .chevron-left:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    .chevron-left:nth-child(2) {
+      animation-delay: 0.6s;
+    }
+    .chevron-left:nth-child(1) {
+      animation-delay: 0.8s;
+    }
+
+    @keyframes glow-red {
+      0%, 100% {
+        opacity: 0.3;
+        border-color: white;
+        box-shadow: none;
+      }
+      50% {
+        opacity: 1;
+        border-color: #ff0033;
+        box-shadow: 0 0 8px #ff0033;
+      }
+    }
 
 
+    .link-symbol {
+      position: relative;
+      width: 40px;
+      height: 20px;
+    }
+
+    .link-symbol::before{
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #00ccff;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #00ccff;
+    }
+    .link-symbol::after {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #ff0000;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #ff0000;
+    }
+
+    .link-symbol::before {
+      left: 0;
+      top: 0;
+      transform: rotate(45deg);
+    }
+
+    .link-symbol::after {
+      right: 0;
+      top: 0;
+      transform: rotate(-45deg);
+    }
+
+    .cross {
+      position: relative;
+      width: 20px;
+      height: 20px;
+      
+    }
+
+    .line {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 18px;
+      height: 4px;
+      background: red;
+      border: 2px solid white;
+      opacity: 0.3;
+      box-sizing: border-box;
+      box-shadow: none;
+      animation: glow-red 2s infinite;
+      animation-fill-mode: forwards;
+      transform-origin: center;
+    }
+
+    .line1 {
+      transform: translate(-50%, -50%) rotate(45deg);
+      animation-delay: 0.8s;
+    }
+
+    .line2 {
+      transform: translate(-50%, -50%) rotate(-45deg);
+      animation-delay: 0.8s;
+    }
+
+    @keyframes glow-red {
+      0%, 100% {
+        opacity: 0.3;
+        border-color: white;
+        box-shadow: none;
+      }
+      50% {
+        opacity: 1;
+        border-color: #ff0033;
+        box-shadow: 0 0 8px #ff0033;
+      }
+    }
+    .noConnection {
+      font-weight: 600;
+      animation: noCon 2s infinite;
+      animation-delay: 0.8s;
+      /* color: white; */
+      /* font-size: ; */
+      opacity: 0;
+    }
+
+    @keyframes noCon {
+      0%, 100% {
+        color: red;
+        opacity: 0;
+      }
+      50% {
+        /* color: white; */
+        opacity: 1;
+      }
+    }
+    .hidden{
+      display: none;
+    }
+    .fclose{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* .dataLoading {
+      animation: spin 0.5s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    } */
+    /* Popup container */
+.loading-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5); /* Semi-transparent overlay */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* Popup content box */
+.loading-content {
+  background: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* Spinner */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 5px solid #ccc;
+  border-top-color: #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+/* Animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Utility class to hide the popup */
+.hidden {
+  display: none;
+}
+.fetchCommentsContainer{
+  display: flex;
+  align-self: center;
+  justify-content: space-between;
+  width: 100%;
+}
+.fetchComments{
+  display: flex;
+  align-items: center;
+  height: 30px;
+  padding: 0px 5px;
+  border: none;
+  background: transparent;
+  border-left: 2px solid darkturquoise;
+  border-bottom: 2px solid darkturquoise;
+  border-radius: 5px;
+}
+.fetchComments:active {
+  background-color: rgba(64, 224, 208, 0.2); /* light turquoise */
+  transform: scale(0.97); /* slight shrink for feedback */
+}
+.infoCom{
+  color: red;
+}
+  
+  
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <!-- <button><img src="./images/refresh.png"></button> -->
-    <h2>Pages linked to bussiness</h2>
-    <select id="pageDropdown" style="
-    height: 30px;
-    margin: 10px 0px;
-    width: 100%;">
-      <option value="">Select a page</option>
-    </select>
-    <h2>Instagram Posts</h2>
-    <div class="search-bar">
-      <input type="text" class="search-input" id="searchInput" placeholder="Search by caption...">
+  <div class="topBar">
+    <div class="topBarLeft">
+      <img src="./images/bylogo-removebg-preview.png" class="topImages">
+      <p>Brainy Voyage</p>
     </div>
-    <!-- Here comes the post container left side -->
-    <div id="postsContainer"></div>
-  </div>
-
-  
-
-    <div class="post-details">
-      <div class="pageData profile-stats">
-        <div class="stat-item">Total Posts: <span class="media"></span></div>
-        <div class="stat-item">Followers: <span class="followers"></span></div>
-        <div class="stat-item">Following: <span class="following"></span></div>
-        <div class="stat-item">
-          <a href="#" class="website-link websiteLink" target="_blank">Website</a>
-        </div>
+    <div class="highfens">
+      <div class="chevron-right"></div>
+      <div class="chevron-right"></div>
+      <div class="chevron-right"></div>
+      <div class="chevron-right"></div>
+      <div class="chevron-right"></div>
+    </div>
+    <div class="worldLogoContainer">
+      <!-- <img src="./images/public-off.png"> -->
+      <div class="link-symbol dataLoading"></div>
+      <button onclick="facebookLogin()" class="fbloginBtn">Login to FB</button>
+      <button onclick="facebookLogout()" class="fblogoutBtn hidden">Logout</button>
+    </div>
+    <div class="highfens">
+      <!-- <div class="cross">
+        <div class="line line1"></div>
+        <div class="line line2"></div>
+      </div> -->
+      <div class="fclose highfens ">
+        <p class="noConnection ">NO CONNECTION</p>
+        <!-- <div class="cross">
+          <div class="line line1"></div>
+          <div class="line line2"></div>
+        </div> -->
       </div>
-      <!-- <div id="toast" class="toast"></div> -->
-      <div id="toast-container"></div>
-      <div class="main-content">
-        <div class="header">
-          <h1>Brainy Voyage</h1> 
-          <div class="stats-bar">
-            <div class="stat-card">
-              <h3>Total Comments</h3>
-              <p id="totalComments">0</p>
-            </div>
-            <div class="stat-card">
-              <h3>Messages Sent</h3>
-              <p id="messagesSent">0</p>
-            </div>
-            <div class="stat-card">
-              <h3>Messages Failed</h3>
-              <p id="messagesFailed">0</p>
-            </div>
-            <div class="stat-card">
-              <h3>Messages Pending</h3>
-              <p id="messagesPending">0</p>
-            </div>
-            <div class="stat-card">
-              <h3>Likes</h3>
-              <p id="totalLikes">0</p>
-            </div>
+      <div class="fconnect highfens hidden">
+        <div class="chevron-left"></div>
+        <div class="chevron-left"></div>
+        <div class="chevron-left"></div>
+        <div class="chevron-left"></div>
+        <div class="chevron-left"></div>
+      </div>
+    </div>
+    <div class="topBarLeft">
+      <p id="user-name">Unknown</p>
+      <img id="user-pic" src="./images/facebook.png" class="topImages">
+    </div>
+  </div>
+  <div id="loadingPopup" class="loading-popup hidden">
+  <div class="loading-content">
+    <div class="spinner"></div>
+    <p>Loading, please wait...</p>
+  </div>
+</div>
+
+
+  <main>
+    <div class="sidebar">
+      
+      <h2>Pages linked to bussiness</h2>
+      <select id="pageDropdown" style="
+          height: 30px;
+          margin: 10px 0px;
+          width: 100%;">
+        <option value="">Select a page</option>
+      </select>
+      <h2>Instagram Posts</h2>
+      <div class="search-bar">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search by caption...">
+      </div>
+      <!-- Here comes the post container left side -->
+      <div id="postsContainer"></div>
+    </div>
+
+    
+
+      <div class="post-details">
+        <div class="pageData profile-stats">
+          <div class="stat-item">Total Posts: <span class="media"></span></div>
+          <div class="stat-item">Followers: <span class="followers"></span></div>
+          <div class="stat-item">Following: <span class="following"></span></div>
+          <div class="stat-item">
+            <a href="#" class="website-link websiteLink" target="_blank">Website</a>
           </div>
         </div>
-      <div id="notificationContainer"></div>
-      
-      <div id="postInfo" class="post-info" style="display: none;">
-        <p><strong>ID:</strong> <span id="postId"></span></p>
-        <p><strong>Caption:</strong> <span id="postCaption"></span></p>
-        <p><strong>Permalink:</strong> <a id="postPermalink" target="_blank"></a></p>
-        <p><strong>Time:</strong> <span id="postTime"></span></p>
-      </div>
+        <!-- <div id="toast" class="toast"></div> -->
+        <div id="toast-container"></div>
+        <div class="main-content">
+          <div class="header">
+            <h1>Brainy Voyage</h1> 
+            <div class="stats-bar">
+              <div class="stat-card">
+                <h3>Total Comments</h3>
+                <p id="totalComments">0</p>
+              </div>
+              <div class="stat-card">
+                <h3>Messages Sent</h3>
+                <p id="messagesSent">0</p>
+              </div>
+              <div class="stat-card">
+                <h3>Messages Failed</h3>
+                <p id="messagesFailed">0</p>
+              </div>
+              <div class="stat-card">
+                <h3>Messages Pending</h3>
+                <p id="messagesPending">0</p>
+              </div>
+              <div class="stat-card">
+                <h3>Likes</h3>
+                <p id="totalLikes">0</p>
+              </div>
+            </div>
+          </div>
+        <div id="notificationContainer"></div>
+        
+        <div id="postInfo" class="post-info" style="display: none;">
+          <p><strong>ID:</strong> <span id="postId"></span></p>
+          <p><strong>Caption:</strong> <span id="postCaption"></span></p>
+          <p><strong>Permalink:</strong> <a id="postPermalink" target="_blank"></a></p>
+          <p><strong>Time:</strong> <span id="postTime"></span></p>
+        </div>
 
-      <div class="settings-form" id="settingsForm" style="display: none;">
-        <h3>DM Settings</h3>
-        <!-- <button id="fetchData">Fetch 🔃</button> -->
-        <div class="form-group">
-          <label>Current caption:</label>
-          <p id="currentCaption">none</p>
+        <div class="settings-form" id="settingsForm" style="display: none;">
+          <h3>DM Settings</h3>
+          <!-- <button id="fetchData">Fetch 🔃</button> -->
+          <div class="form-group">
+            <label>Current caption:</label>
+            <p id="currentCaption">none</p>
+          </div>
+          <div class="form-group">
+            <label>Enter New Custom caption:</label>
+            <input type="text" class="form-control" id="captionInput" placeholder="Enter custom caption">
+          </div>
+          <div class="form-group">
+            <label>Current Keyword:</label>
+            <p id="currentKeyword">none</p>
+          </div>
+          <div class="form-group">
+            <label>Enter New Keyword:</label>
+            <input type="text" class="form-control" id="keywordInput" placeholder="Enter keyword to trigger DM">
+          </div>
+          <div class="form-group">
+            <label>Current Message Template:</label>
+            <p id="currentMessage">none</p>
+          </div>
+          <div class="form-group">
+            <label>Enter New Message Template:</label>
+            <textarea class="form-control" id="messageInput" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Title for the link:</label>
+            <textarea class="form-control" id="btnTitle" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Link:</label>
+            <textarea class="form-control" id="btnLink" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
+          </div>
+          <button class="btn btn-primary" id="updateKeywordBtn">Update Keyword</button>
+          <button class="btn btn-primary" id="updateMessageBtn">Update Message</button>
+          <button class="btn btn-success" id="updateAllBtn">Update All</button>
         </div>
-        <div class="form-group">
-          <label>Enter New Custom caption:</label>
-          <input type="text" class="form-control" id="captionInput" placeholder="Enter custom caption">
-        </div>
-        <div class="form-group">
-          <label>Current Keyword:</label>
-          <p id="currentKeyword">none</p>
-        </div>
-        <div class="form-group">
-          <label>Enter New Keyword:</label>
-          <input type="text" class="form-control" id="keywordInput" placeholder="Enter keyword to trigger DM">
-        </div>
-        <div class="form-group">
-          <label>Current Message Template:</label>
-          <p id="currentMessage">none</p>
-        </div>
-        <div class="form-group">
-          <label>Enter New Message Template:</label>
-          <textarea class="form-control" id="messageInput" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
-        </div>
-        <div class="form-group">
-          <label>Title for the link:</label>
-          <textarea class="form-control" id="btnTitle" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
-        </div>
-        <div class="form-group">
-          <label>Link:</label>
-          <textarea class="form-control" id="btnLink" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
-        </div>
-        <button class="btn btn-primary" id="updateKeywordBtn">Update Keyword</button>
-        <button class="btn btn-primary" id="updateMessageBtn">Update Message</button>
-        <button class="btn btn-success" id="updateAllBtn">Update All</button>
-      </div>
 
-      <div class="comments-container" id="commentsContainer" style="display: none;">
-        <h3>Comments</h3>
-        <div id="commentsList"></div>
+        <div class="comments-container" id="commentsContainer" style="display: none;">
+          <div class="fetchCommentsContainer">
+            <h3>Comments</h3>
+            <p class="infoCom">Please refresh the page for new comments</p>
+            <button class="fetchComments"><img src="./images/autorenew.png" alt="🔃">Comments</button>
+          </div>
+          <div id="commentsList"></div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div id="logsModal" class="logs-modal" style="display: none;">
-    <div class="logs-content">
-      <div class="logs-header">
-        <h2>Activity Logs</h2>
-        <div>
-          <button class="btn btn-primary" id="clearLogsBtn">Clear Logs</button>
-          <button class="btn btn-danger" id="closeLogsBtn">Close</button>
+    <div id="logsModal" class="logs-modal" style="display: none;">
+      <div class="logs-content">
+        <div class="logs-header">
+          <h2>Activity Logs</h2>
+          <div>
+            <button class="btn btn-primary" id="clearLogsBtn">Clear Logs</button>
+            <button class="btn btn-danger" id="closeLogsBtn">Close</button>
+          </div>
         </div>
+        <div class="logs-body" id="logsBody"></div>
       </div>
-      <div class="logs-body" id="logsBody"></div>
     </div>
-  </div>
+  </main>
 
  
   
   <script>
     // DOM Elements
-  const postsContainer = document.getElementById('postsContainer');
-  const commentsList = document.getElementById('commentsList');
-  const postInfo = document.getElementById('postInfo');
-  const settingsForm = document.getElementById('settingsForm');
-  const commentsContainer = document.getElementById('commentsContainer');
-  const toast = document.getElementById('toast');
-
-  // State
-  let currentPost = null;
-
-  // Load posts on page load
-  window.addEventListener('DOMContentLoaded', loadPosts);
-
-  let dataFetched = false;
-  document.getElementById('pageDropdown').addEventListener('focus', async function () {
-  const dropdown = document.getElementById('pageDropdown'); // Define here
-  
-  if (!dataFetched) {
-    try {
-      const response = await fetch('/api/pages');
-      if (!response.ok) throw new Error("API Failed");
-      
-      const pages = await response.json();
-      dropdown.innerHTML = '<option value="">Select a page</option>';
-      
-      pages.forEach(page => {
-        const option = document.createElement('option');
-        option.value = page.id;
-        option.textContent = page.name;
-        dropdown.appendChild(option);
-      });
-      
-      dataFetched = true;
-    } catch (error) {
-      console.error("Fetch error:", error);
-      dropdown.innerHTML = '<option value="" disabled>Error loading pages</option>';
-    }
-  }
-});
-
-
-
-async function getPageData() {
-  try {
-    const response = await fetch('/api/instagram-accounts');
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const insta = await response.json();
-
-
-    insta.data.forEach(info =>{
-      document.querySelector('.media').textContent = info.media_count;
-      document.querySelector('.followers').textContent = info.followers_count;
-      document.querySelector('.following').textContent = info.follows_count;
-      document.querySelector('.websiteLink').href = info.website;
+    const postsContainer = document.getElementById('postsContainer');
+    const commentsList = document.getElementById('commentsList');
+    const postInfo = document.getElementById('postInfo');
+    const settingsForm = document.getElementById('settingsForm');
+    const commentsContainer = document.getElementById('commentsContainer');
+    const toast = document.getElementById('toast');
+    const userName = document.getElementById('user-name');
+    const fconnect = document.querySelector('.fconnect');
+    const noConnection = document.querySelector('.noConnection');
+    const fbloginBtn = document.querySelector('.fbloginBtn');
+    const fblogoutBtn = document.querySelector('.fblogoutBtn');
+    const userPic = document.getElementById('user-pic');
+    const fetchComments = document.querySelector('.fetchComments');
+    // State
+    let currentPost = null;
+    fetchComments.addEventListener('click', () => {
+      location.reload();
     })
-    // document.getElementById('instagram-data').innerText = JSON.stringify(data, null, 2);
-    // return data; // Optional: return the data if needed elsewhere
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    // Optional: display error in UI
-    // document.getElementById('instagram-data').innerText = 'Error loading Instagram data';
-    throw error; // Re-throw if you want calling code to handle it
-  }
-}
-
-  // Function to load posts
-  async function loadPosts() {
-    try {
-      showLoader(postsContainer);
-      const response = await fetch('/api/comments');
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch posts');
-      }
-      
-      const posts = await response.json();
-      postsContainer.innerHTML = '';
-      
-      if (posts.length === 0) {
-        postsContainer.innerHTML = '<p class="no-data">No posts found</p>';
-        return;
-      }
-
-      posts.forEach(post => {
-        const postElement = createPostElement(post);
-        postsContainer.appendChild(postElement);
-      });
-      getPageData();
-    } catch (error) {
-      console.error('Error loading posts:', error);
-      showToast('Failed to load posts', 'error');
-      postsContainer.innerHTML = '<p class="error">Error loading posts</p>';
-    } finally {
-      hideLoader(postsContainer);
-    }
-  }
-
-  // Create post element
-  function createPostElement(post) {
-    const div = document.createElement('div');
-    div.className = 'post';
-    div.innerHTML = `
-      <p class="user">${post.postId}</p>
-      <p class="caption">${post.caption || 'No caption'}</p>
-      <p class="timestamp">${new Date(post.timestamp).toLocaleString()}</p>
-      <div class="stats">
-        <span>💬 ${post.comments_count || 0}</span>
-        <span>❤️ ${post.like_count || 0}</span>
-      </div>
-    `;
-    div.addEventListener('click', () => handlePostClick(post));
-    return div;
-  }
-
-  
-  
-  async function handlePostClick(post) {
-    currentPost = post;
-    try {
-      showLoader(commentsList);
-      updatePostInfo(post);
-      
-      const response = await fetch(`/api/settings/${post.postId}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch post details');
-      }
-      
-      const data = await response.json();
-      updateSettingsForm(data.settings);
-      
-      // Make sure we're passing both Instagram comments and DB comments
-      renderComments(data.post?.comments || [], data.mComments || []);
-      
-      showElements([postInfo, settingsForm, commentsContainer]);
-    } catch (error) {
-      console.error('Error loading post details:', error);
-      showToast('Failed to load post details', 'error');
-      commentsList.innerHTML = '<p class="error">Error loading comments</p>';
-    } finally {
-      hideLoader(commentsList);
-    }
-  }
-
-
-  // Update post info section
-  function updatePostInfo(post) {
-    document.getElementById('postId').textContent = post.postId;
-    document.getElementById('postCaption').textContent = post.caption || 'No caption';
-    document.getElementById('postPermalink').href = post.permalink || '#';
-    document.getElementById('postPermalink').textContent = post.permalink ? 'View Post' : 'No link';
-    document.getElementById('postTime').textContent = new Date(post.timestamp).toLocaleString();
-    document.getElementById('totalComments').textContent = post.comments_count || 0;
-    document.getElementById('totalLikes').textContent = post.like_count || 0;
-  }
-
-  // Update settings form
-  function updateSettingsForm(settings) {
-    document.getElementById('currentCaption').textContent = settings?.customCaption || 'none';
-    document.getElementById('currentKeyword').textContent = settings?.keyword || 'none';
-    document.getElementById('currentMessage').textContent = settings?.message || 'none';
     
-    // Set form values
-    document.getElementById('captionInput').value = settings?.customCaption || '';
-    document.getElementById('keywordInput').value = settings?.keyword || '';
-    document.getElementById('messageInput').value = settings?.message || '';
-    document.getElementById('btnTitle').value = settings?.title || '';
-    document.getElementById('btnLink').value = settings?.link || '';
-  }
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId: '1341248386997024',
+        cookie: true,
+        xfbml: true,
+        version: 'v22.0'
+      });
 
-  // Render comments table
-  async function renderComments(instagramComments, dbComments) {
-  if (!instagramComments?.length) {
-    commentsList.innerHTML = '<p class="no-data">No comments found</p>';
-    return;
-  }
+      FB.getLoginStatus(function(response) {
+        if (response.status === 'connected') {
+          keepLogin(response);
+        }
+      });
+    };
 
-  // Create a map of DB comments for quick lookup
-  const dbCommentsMap = new Map();
-  dbComments.forEach(dbComment => {
-    dbCommentsMap.set(dbComment.commentID, dbComment);
-  });
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "https://connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    })(document, 'script', 'facebook-jssdk');
 
-  const now = new Date();
-  const sevenDays = 7 * 24 * 60 * 60 * 1000;
 
-  const tableHTML = `
-    <table class="comments-table">
-      <thead>
-        <tr>
-          <th>User</th>
-          <th>Comment</th>
-          <th>Time</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${instagramComments.map(comment => {
-          const dbComment = dbCommentsMap.get(comment.commentID);
-          const commentTime = new Date(comment.commentTime);
-          const isExpired = now - commentTime > sevenDays;
+
+      async function keepLogin(response){
+        try{
+          showLoader();
+          const info = await fetch(`/user/loggedIn/${response.authResponse.userID}`);
+          const infoJson = await info.json();
+          userPic.src = infoJson.profile;
+          userName.textContent = infoJson.name
+          noConnection.classList.add('hidden');
+          fconnect.classList.remove('hidden');
+          fbloginBtn.classList.add('hidden');
+          fblogoutBtn.classList.remove('hidden');
           
-          let status = 'New';
-          let statusClass = 'new';
           
-          if (isExpired) {
-            status = 'Expired';
-            statusClass = 'expired';
-          } else if (dbComment) {
-            // Get status from MongoDB record
-            switch (dbComment.msgSentStatus) {
-              case 's':
-                status = 'Sent';
-                statusClass = 'sent';
-                break;
-              case 'p':
-                status = 'Pending';
-                statusClass = 'pending';
-                break;
-              case 'i':
-                status = 'Ignored';
-                statusClass = 'ignored';
-                break;
-              case 'f':
-                status = 'Failed';
-                statusClass = 'failed';
-                break;
-              default:
-                status = 'Unknown';
-                statusClass = 'unknown';
+          let selectedPageId;
+          const dropdown = document.getElementById('pageDropdown'); // Define here
+          dropdown.addEventListener('change', function () {
+            selectedPageId = this.value;
+            if (selectedPageId) {
+              getPageData(selectedPageId);
+              
             }
+          });
+          try {
+            const pages = infoJson.pages;
+            dropdown.innerHTML = '<option value="">Select a page</option>';
+            
+            pages.forEach(page => {
+              const option = document.createElement('option');
+              option.value = page.id;
+              option.textContent = page.name;
+              dropdown.appendChild(option);
+            });
+            if (pages.length > 0) {
+              dropdown.selectedIndex = 1; // 0 is "Select a page", 1 is first real page
+              dropdown.dispatchEvent(new Event('change')); // trigger the change handler
+            }
+            
+            dataFetched = true;
+          } catch (error) {
+            console.error("Fetch error:", error);
+            dropdown.innerHTML = '<option value="" disabled>Error loading pages</option>';
           }
 
-          return `
-            <tr>
-              <td>${comment.commentUsername}</td>
-              <td>${comment.commentText}</td>
-              <td>${commentTime.toLocaleString()}</td>
-              <td class="status ${statusClass}">${status}</td>
-              <td class="action">
-                <button
-                  ${status !== 'Failed' ? 'hidden' : ''}
-                  class="retry-btn"
-                  title="retry" 
-                  data-commentid="${comment.commentID}"
-                  data-postid="${currentPost.postId}">
-                  <img src="./images/refresh.png">
-                </button>
-                <button
-                  ${status !== 'Pending' ? 'hidden' : ''}
-                  class="retry-btn"
-                  title="send" 
-                  data-commentid="${comment.commentID}"
-                  data-postid="${currentPost.postId}">
-                  <img src="./images/send.png">
-                </button>
-                <button
-                  ${status !== 'Sent' ? 'hidden' : ''}
-                  class="btnInfo successBtn"
-                  title="Message sent">
-                  <img src="./images/success.png">
-                </button>
-                <button class="btnInfo visibleBtn" title="comment-visible" ${comment.hidden == false ? '' : 'hidden'} data-commentid="${comment.commentID}"data-postid="${currentPost.postId}"><img src="./images/view.png"></button>
-                <button class="btnInfo hideBtn" title="Comment-hidden" ${comment.hidden == true ? '' : 'hidden'} data-commentid="${comment.commentID}"data-postid="${currentPost.postId}"><img src="./images/hide.png"></button>
-                <button class="btnInfo cdeleteBtn" title="delete" data-commentid="${comment.commentID}"><img src="./images/delete.png"></button>
-                <button class="btnInfo replyBtn" title="reply" data-commentid="${comment.commentID}"><img src="./images/reply.png"></button>
-              </td>
-            </tr>
-          `;
-        }).join('')}
-      </tbody>
-    </table>
-  `;
-
-  // Count each status
-  let sent = 0, pending = 0, failed = 0, ignored = 0, expired = 0, newStatus = 0;
-
-  instagramComments.forEach(comment => {
-    const dbComment = dbCommentsMap.get(comment.commentID);
-    const commentTime = new Date(comment.commentTime);
-    const isExpired = now - commentTime > sevenDays;
-
-    if (isExpired && !dbComment) {
-      expired++;
-    } else if (dbComment) {
-      switch (dbComment.msgSentStatus) {
-        case 's': sent++; break;
-        case 'p': pending++; break;
-        case 'f': failed++; break;
-        case 'i': ignored++; break;
-        default: break;
+          
+        }catch(err){
+          showToast("Error Occured while login. Please try later", "error");
+        }
       }
-    } else {
-      newStatus++;
-    }
-  });
 
-  document.querySelector('#messagesPending').textContent = pending;
-  document.querySelector('#messagesSent').textContent = sent;
-  document.querySelector('#messagesFailed').textContent = failed;
+      function facebookLogout() {
+        FB.getLoginStatus(function(response) {
+          if (response.status === 'connected') {
+            FB.logout(function(response) {
+              showToast("LoggedOut successfully", "success")
+              // Clear app session or redirect
+              localStorage.removeItem('fbToken');
+              window.location.href = "/";
+            });
+          } else {
+            console.log('User is not logged in through Facebook.');
+            showToast("User has not logged In yet.", "error")
+          }
+        });
+      }
 
-  
-  commentsList.innerHTML = tableHTML;
-  setupRetryButtons();
-  setupVisibilityToggles();
-  setupDeleteButtons();
-  sendReply();
-  sentBtn();
-}
+      function facebookLogin() {
+        FB.login(function(response) {
+          if (response.authResponse) {
+            const accessToken = response.authResponse.accessToken;
+            showLoader()
+            // Send token to backend for verification
+            fetch('/auth/facebook/callback', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ token: accessToken })
+            })
+            .then(response =>
+            response.json())
+            .then(data => {
+              hideLoader();
+              window.location.href = "/";
+            })
+            .catch(error => {
+              console.error('Error:', error);
+            });
+          } else {
+            console.log('User cancelled login or did not fully authorize.');
+            showToast("User cancelled login or failed to authorize", "error")
+          }
+        }, { 
+          scope: 'pages_show_list, instagram_manage_comments, business_management, instagram_manage_messages, pages_read_engagement, instagram_basic'
+           
+        });
+      }
 
-function sentBtn(){
-  document.querySelectorAll('.successBtn').forEach(button => {
-    button.addEventListener('click', () => {
-      showToast('Message already sent', 'error');
-    })
-  })
-}
 
-
-function sendReply(){
-  document.querySelectorAll('.replyBtn').forEach(button => {
-    button.addEventListener('click', async () => {
-      const commentID = button.dataset.commentid;
-      const replyMessage = '✅ Check your DM';
       
-      try{
-        const response = await fetch(`/api/reply/${commentID}`, {
+
+
+
+
+
+
+
+
+
+    let dataFetched = false;
+    
+
+    async function getPageData(ID) {
+    try {
+      const response = await fetch(`/api/instagram-accounts/${ID}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const insta = await response.json();
+
+
+      insta.data.forEach(info =>{
+        document.querySelector('.media').textContent = info.media_count;
+        document.querySelector('.followers').textContent = info.followers_count;
+        document.querySelector('.following').textContent = info.follows_count;
+        const websiteLink = document.querySelector('.websiteLink');
+        if (info.website && info.website.trim() !== '') {
+          websiteLink.href = info.website;
+        } else {
+          websiteLink.classList.add('hidden')
+        }
+
+      })
+      loadPosts(ID)
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      throw error;
+    }
+  }
+
+    // Function to load posts
+    async function loadPosts(ID) {
+      try {
+        showLoader();
+        const response = await fetch(`/api/comments/${ID}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch posts');
+        }
+        
+        const posts = await response.json();
+        postsContainer.innerHTML = '';
+        
+        if (posts.length === 0) {
+          postsContainer.innerHTML = '<p class="no-data">No posts found</p>';
+          return;
+        }
+
+        posts.forEach(post => {
+          const postElement = createPostElement(post, ID);
+          postsContainer.appendChild(postElement);
+        });
+      } catch (error) {
+        console.error('Error loading posts:', error);
+        showToast('Failed to load posts', 'error');
+        postsContainer.innerHTML = '<p class="error">Error loading posts</p>';
+      } finally {
+        hideLoader();
+      }
+    }
+
+    // Create post element
+    function createPostElement(post, ID) {
+      const div = document.createElement('div');
+      div.className = 'post';
+      div.innerHTML = `
+        <p class="user">${post.postId}</p>
+        <p class="caption">${post.caption || 'No caption'}</p>
+        <p class="timestamp">${new Date(post.timestamp).toLocaleString()}</p>
+        <div class="stats">
+          <span>💬 ${post.comments_count || 0}</span>
+          <span>❤️ ${post.like_count || 0}</span>
+        </div>
+      `;
+      div.addEventListener('click', () => handlePostClick(post, ID));
+      
+      return div;
+    }
+
+    
+    
+    async function handlePostClick(post, ID) {
+      currentPost = post;
+      try {
+        showLoader();
+        updatePostInfo(post);
+        
+        const response = await fetch(`/api/settings/${post.postId}/${ID}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch post details');
+        }
+        
+        const data = await response.json();
+        updateSettingsForm(data.settings);
+        
+        // Make sure we're passing both Instagram comments and DB comments
+        renderComments(data.post?.comments || [], data.mComments || [], ID);
+        
+        
+        showElements([postInfo, settingsForm, commentsContainer]);
+      } catch (error) {
+        console.error('Error loading post details:', error);
+        showToast('Failed to load post details', 'error');
+        commentsList.innerHTML = '<p class="error">Error loading comments</p>';
+      } finally {
+        hideLoader();
+      }
+    }
+
+
+    // Update post info section
+    function updatePostInfo(post) {
+      document.getElementById('postId').textContent = post.postId;
+      document.getElementById('postCaption').textContent = post.caption || 'No caption';
+      document.getElementById('postPermalink').href = post.permalink || '#';
+      document.getElementById('postPermalink').textContent = post.permalink ? 'View Post' : 'No link';
+      document.getElementById('postTime').textContent = new Date(post.timestamp).toLocaleString();
+      document.getElementById('totalComments').textContent = post.comments_count || 0;
+      document.getElementById('totalLikes').textContent = post.like_count || 0;
+    }
+
+    // Update settings form
+    function updateSettingsForm(settings) {
+      document.getElementById('currentCaption').textContent = settings?.customCaption || 'none';
+      document.getElementById('currentKeyword').textContent = settings?.keyword || 'none';
+      document.getElementById('currentMessage').textContent = settings?.message || 'none';
+      
+      // Set form values
+      document.getElementById('captionInput').value = settings?.customCaption || '';
+      document.getElementById('keywordInput').value = settings?.keyword || '';
+      document.getElementById('messageInput').value = settings?.message || '';
+      document.getElementById('btnTitle').value = settings?.title || '';
+      document.getElementById('btnLink').value = settings?.link || '';
+    }
+
+    // Render comments table
+    async function renderComments(instagramComments, dbComments, ID) {
+    if (!instagramComments?.length) {
+      commentsList.innerHTML = '<p class="no-data">No comments found</p>';
+      return;
+    }
+
+    // Create a map of DB comments for quick lookup
+    const dbCommentsMap = new Map();
+    dbComments.forEach(dbComment => {
+      dbCommentsMap.set(dbComment.commentID, dbComment);
+    });
+
+    const now = new Date();
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
+
+    const tableHTML = `
+      <table class="comments-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Comment</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${instagramComments.map(comment => {
+            const dbComment = dbCommentsMap.get(comment.commentID);
+            const commentTime = new Date(comment.commentTime);
+            const isExpired = now - commentTime > sevenDays;
+            
+            let status = 'New';
+            let statusClass = 'new';
+            
+            if (isExpired) {
+              status = 'Expired';
+              statusClass = 'expired';
+            } else if (dbComment) {
+              // Get status from MongoDB record
+              switch (dbComment.msgSentStatus) {
+                case 's':
+                  status = 'Sent';
+                  statusClass = 'sent';
+                  break;
+                case 'p':
+                  const currentKeyword = document.getElementById('currentKeyword').textContent.toLowerCase();
+                  const commentText = comment.commentText.toLowerCase();
+                  if (commentText !== currentKeyword) {
+                    status = 'Ignored';
+                    statusClass = 'ignored';
+                  } else {
+                    status = 'Pending';
+                    statusClass = 'pending';
+                  }
+                  break;
+                case 'i':
+                  status = 'Ignored';
+                  statusClass = 'ignored';
+                  break;
+                case 'f':
+                  status = 'Failed';
+                  statusClass = 'failed';
+                  break;
+                default:
+                  status = 'Unknown';
+                  statusClass = 'unknown';
+              }
+            }
+
+            return `
+              <tr>
+                <td>${comment.commentUsername}</td>
+                <td>${comment.commentText}</td>
+                <td>${commentTime.toLocaleString()}</td>
+                <td class="status ${statusClass}">${status}</td>
+                <td class="action">
+                  <button
+                    ${status !== 'Failed' ? 'hidden' : ''}
+                    class="retry-btn"
+                    title="retry" 
+                    data-commentid="${comment.commentID}"
+                    data-postid="${currentPost.postId}">
+                    <img src="./images/refresh.png">
+                  </button>
+                  <button
+                    ${status !== 'Pending' ? 'hidden' : ''}
+                    class="retry-btn"
+                    title="send" 
+                    data-commentText=""
+                    data-commentid="${comment.commentID}"
+                    data-postid="${currentPost.postId}">
+                    <img src="./images/send.png">
+                  </button>
+                  <button
+                    ${status !== 'Sent' ? 'hidden' : ''}
+                    class="btnInfo successBtn"
+                    title="Message sent">
+                    <img src="./images/success.png">
+                  </button>
+                  <button class="btnInfo visibleBtn" title="comment-visible" ${comment.hidden == false ? '' : 'hidden'} data-commentid="${comment.commentID}"data-postid="${currentPost.postId}"><img src="./images/view.png"></button>
+                  <button class="btnInfo hideBtn" title="Comment-hidden" ${comment.hidden == true ? '' : 'hidden'} data-commentid="${comment.commentID}"data-postid="${currentPost.postId}"><img src="./images/hide.png"></button>
+                  <button class="btnInfo cdeleteBtn" title="delete" data-commentid="${comment.commentID}"><img src="./images/delete.png"></button>
+                  <button class="btnInfo replyBtn" title="reply" data-commentid="${comment.commentID}"><img src="./images/reply.png"></button>
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+
+    // Count each status
+    let sent = 0, pending = 0, failed = 0, ignored = 0, expired = 0, newStatus = 0;
+
+    instagramComments.forEach(comment => {
+      const dbComment = dbCommentsMap.get(comment.commentID);
+      const commentTime = new Date(comment.commentTime);
+      const isExpired = now - commentTime > sevenDays;
+
+      if (isExpired && !dbComment) {
+        expired++;
+      } else if (dbComment) {
+        switch (dbComment.msgSentStatus) {
+          case 's': sent++; break;
+          case 'p': pending++; break;
+          case 'f': failed++; break;
+          case 'i': ignored++; break;
+          default: break;
+        }
+      } else {
+        newStatus++;
+      }
+    });
+
+    document.querySelector('#messagesPending').textContent = pending;
+    document.querySelector('#messagesSent').textContent = sent;
+    document.querySelector('#messagesFailed').textContent = failed;
+
+    
+    commentsList.innerHTML = tableHTML;
+    setupRetryButtons(ID);
+    setupVisibilityToggles(ID);
+    setupDeleteButtons(ID);
+    sendReply(ID);
+    sentBtn();
+  }
+
+    function sentBtn(){
+      document.querySelectorAll('.successBtn').forEach(button => {
+        button.addEventListener('click', () => {
+          showToast('Message already sent', 'error');
+        })
+      })
+    }
+
+
+    function sendReply(ID){
+      document.querySelectorAll('.replyBtn').forEach(button => {
+        button.addEventListener('click', async () => {
+          const commentID = button.dataset.commentid;
+          const replyMessage = '✅ Check your DM';
+          
+          try{
+            const response = await fetch(`/api/reply/${commentID}/${ID}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ replyMessage })
+            })
+
+            if (!response.ok) throw new Error('Reply failed');
+
+            showToast('Reply sent', 'success');
+          }
+          catch(err){
+            showToast('Failed to reply for a comment', 'error');
+          }
+        })
+      })
+    }
+
+    function setupDeleteButtons(ID) {
+      document.querySelectorAll('.cdeleteBtn').forEach(button => {
+        button.addEventListener('click', async () => {
+          const commentID = button.dataset.commentid;
+
+          if (!confirm('Are you sure you want to delete this comment?')) return;
+
+          try {
+            button.disabled = true;
+            button.innerHTML = '<img src="./images/sending.png">';
+
+            const res = await fetch(`/api/delete/${commentID}/${ID}`, {
+              method: 'DELETE'
+            });
+
+            if (!res.ok) throw new Error('Delete failed');
+
+            showToast('Comment deleted', 'success');
+
+            // Optional: Remove the row from the table
+            button.closest('tr').remove();
+          } catch (err) {
+            showToast('Failed to delete comment', 'error');
+            console.error(err);
+          }
+        });
+      });
+    }
+
+
+    function setupVisibilityToggles(ID) {
+    const toggleButtons = [
+      { selector: '.visibleBtn', hide: true, successIcon: './images/hide.png', toastMsg: 'Comment hidden' },
+      { selector: '.hideBtn', hide: false, successIcon: './images/view.png', toastMsg: 'Comment unhidden' }
+    ];
+
+    toggleButtons.forEach(({ selector, hide, successIcon, toastMsg }) => {
+      document.querySelectorAll(selector).forEach(button => {
+        button.addEventListener('click', async () => {
+          const commentID = button.dataset.commentid;
+          button.disabled = true;
+          button.textContent = '';
+          const img = document.createElement('img');
+          img.src = './images/sending.png';
+          button.appendChild(img);
+
+          try {
+            // const res = await fetch(`/api/hide/${commentID}?hide=${hide}/${ID}`, { method: 'POST' });
+            const res = await fetch(`/api/hide/${commentID}/${ID}?hide=${hide}`, { method: 'POST' });
+            if (!res.ok) throw new Error('Request failed');
+            showToast(toastMsg, 'success');
+            button.textContent = '';
+            img.src = successIcon;
+            button.appendChild(img);
+          } catch (err) {
+            showToast('Failed to update visibility', 'error');
+            console.error(err);
+          }
+        });
+      });
+    });
+  }
+
+
+
+    // Get status text
+    function getStatusText(statusCode) {
+      switch (statusCode) {
+        case 's': return 'Sent';
+        case 'p': return 'Pending';
+        case 'i': return 'Ignored';
+        case 'f': return 'Failed';
+        case 'e': return 'Expired';
+        default: return 'Unknown';
+      }
+    }
+
+    
+
+
+    // Setup retry buttons
+    function setupRetryButtons(ID) {
+      document.querySelectorAll('.retry-btn').forEach(button => {
+        button.addEventListener('click', async () => {
+
+          if(false){
+            showToast("Keyword and comment didn't match", "error")
+          }else{
+            const commentID = button.dataset.commentid;
+            const postId = button.dataset.postid;
+            try {
+              button.disabled = true;
+              button.textContent = '';
+              const img = document.createElement('img');
+              img.src = './images/sending.png'; // Replace with your image path
+              button.appendChild(img);
+  
+              const response = await fetch(`/api/retry/${commentID}/${ID}`, {
+                method: 'POST'
+              });
+  
+  
+              if (!response.ok) {
+                throw new Error('Retry failed');
+              }
+              
+              showToast('Message sent successfully', 'success');
+              button.textContent = '';
+              img.src = './images/success.png'; // Replace with your image path
+              button.appendChild(img);
+              button.classList.add('success');
+              
+              // Update status in UI
+              const statusCell = button.closest('tr').querySelector('.status');
+              statusCell.textContent = 'Sent';
+              statusCell.className = 'status sent';
+              
+            } catch (error) {
+              console.error('Retry error:', error);
+              showToast('Failed to resend message', 'error');
+              button.textContent = '';
+              const img = document.createElement('img');
+              img.src = './images/retry-failed.png'; // Replace with your image path
+              
+              button.appendChild(img);
+              button.disabled = false;
+              setTimeout(() => {
+                button.textContent = ''; // Clear the text
+  
+                const img = document.createElement('img');
+                img.src = './images/refresh.png'; // Replace with your image path
+                button.appendChild(img);
+              }, 3000);
+            }
+          }
+        });
+      });
+    }
+
+
+
+
+
+    
+    // Save post settings
+    async function savePostSettings() {
+      const postId = document.getElementById('postId').textContent;
+      const customCaption = document.getElementById('captionInput').value;
+      const keyword = document.getElementById('keywordInput').value;
+      const message = document.getElementById('messageInput').value;
+      const title = document.getElementById('btnTitle').value;
+      const link = document.getElementById('btnLink').value;
+
+      try {
+        showLoader();
+        const response = await fetch('/api/settings', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ replyMessage })
-        })
-
-        if (!response.ok) throw new Error('Reply failed');
-
-        showToast('Reply sent', 'success');
-      }
-      catch(err){
-        showToast('Failed to reply for a comment', 'error');
-      }
-    })
-  })
-}
-
-function setupDeleteButtons() {
-  document.querySelectorAll('.cdeleteBtn').forEach(button => {
-    button.addEventListener('click', async () => {
-      const commentID = button.dataset.commentid;
-
-      if (!confirm('Are you sure you want to delete this comment?')) return;
-
-      try {
-        button.disabled = true;
-        button.innerHTML = '<img src="./images/sending.png">';
-
-        const res = await fetch(`/api/delete/${commentID}`, {
-          method: 'DELETE'
+          body: JSON.stringify({ postId, customCaption, keyword, message, title, link })
         });
-
-        if (!res.ok) throw new Error('Delete failed');
-
-        showToast('Comment deleted', 'success');
-
-        // Optional: Remove the row from the table
-        button.closest('tr').remove();
-      } catch (err) {
-        showToast('Failed to delete comment', 'error');
-        console.error(err);
-      }
-    });
-  });
-}
-
-
-function setupVisibilityToggles() {
-  const toggleButtons = [
-    { selector: '.visibleBtn', hide: true, successIcon: './images/hide.png', toastMsg: 'Comment hidden' },
-    { selector: '.hideBtn', hide: false, successIcon: './images/view.png', toastMsg: 'Comment unhidden' }
-  ];
-
-  toggleButtons.forEach(({ selector, hide, successIcon, toastMsg }) => {
-    document.querySelectorAll(selector).forEach(button => {
-      button.addEventListener('click', async () => {
-        const commentID = button.dataset.commentid;
-        button.disabled = true;
-        button.textContent = '';
-        const img = document.createElement('img');
-        img.src = './images/sending.png';
-        button.appendChild(img);
-
-        try {
-          const res = await fetch(`/api/hide/${commentID}?hide=${hide}`, { method: 'POST' });
-          if (!res.ok) throw new Error('Request failed');
-          showToast(toastMsg, 'success');
-          button.textContent = '';
-          img.src = successIcon;
-          button.appendChild(img);
-        } catch (err) {
-          showToast('Failed to update visibility', 'error');
-          console.error(err);
-        }
-      });
-    });
-  });
-}
-
-
-
-  // Get status text
-  function getStatusText(statusCode) {
-    switch (statusCode) {
-      case 's': return 'Sent';
-      case 'p': return 'Pending';
-      case 'i': return 'Ignored';
-      case 'f': return 'Failed';
-      case 'e': return 'Expired';
-      default: return 'Unknown';
-    }
-  }
-
-
-  // Setup retry buttons
-  function setupRetryButtons() {
-    document.querySelectorAll('.retry-btn').forEach(button => {
-      button.addEventListener('click', async () => {
-        const commentID = button.dataset.commentid;
-        const postId = button.dataset.postid;
         
-        try {
-          button.disabled = true;
-          button.textContent = '';
-          const img = document.createElement('img');
-          img.src = './images/sending.png'; // Replace with your image path
-          button.appendChild(img);
-
-          const response = await fetch(`/api/retry/${commentID}`, {
-            method: 'POST'
-          });
-
-
-          if (!response.ok) {
-            throw new Error('Retry failed');
-          }
-          
-          showToast('Message sent successfully', 'success');
-          button.textContent = '';
-          img.src = './images/success.png'; // Replace with your image path
-          button.appendChild(img);
-          button.classList.add('success');
-          
-          // Update status in UI
-          const statusCell = button.closest('tr').querySelector('.status');
-          statusCell.textContent = 'Sent';
-          statusCell.className = 'status sent';
-          
-        } catch (error) {
-          console.error('Retry error:', error);
-          showToast('Failed to resend message', 'error');
-          button.textContent = '';
-          const img = document.createElement('img');
-          img.src = './images/retry-failed.png'; // Replace with your image path
-          
-          button.appendChild(img);
-          button.disabled = false;
-          setTimeout(() => {
-            button.textContent = ''; // Clear the text
-
-            const img = document.createElement('img');
-            img.src = './images/refresh.png'; // Replace with your image path
-            button.appendChild(img);
-          }, 3000);
+        if (!response.ok) {
+          throw new Error('Failed to save settings');
         }
-      });
-    });
-  }
-
-
-
-
-
-  
-  // Save post settings
-  async function savePostSettings() {
-    const postId = document.getElementById('postId').textContent;
-    const customCaption = document.getElementById('captionInput').value;
-    const keyword = document.getElementById('keywordInput').value;
-    const message = document.getElementById('messageInput').value;
-    const title = document.getElementById('btnTitle').value;
-    const link = document.getElementById('btnLink').value;
-
-    try {
-      showLoader(settingsForm);
-      const response = await fetch('/api/settings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ postId, customCaption, keyword, message, title, link })
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to save settings');
+        
+        const result = await response.json();
+        showToast('Settings saved successfully', 'success');
+        updateSettingsForm(result.data);
+        
+        // Refresh comments to show updated statuses
+        if (currentPost) {
+          await handlePostClick(currentPost);
+        }
+      } catch (error) {
+        console.error('Error saving settings:', error);
+        showToast('Failed to save settings', 'error');
+      } finally {
+        hideLoader();
       }
-      
-      const result = await response.json();
-      showToast('Settings saved successfully', 'success');
-      updateSettingsForm(result.data);
-      
-      // Refresh comments to show updated statuses
-      if (currentPost) {
-        await handlePostClick(currentPost);
-      }
-    } catch (error) {
-      console.error('Error saving settings:', error);
-      showToast('Failed to save settings', 'error');
-    } finally {
-      hideLoader(settingsForm);
     }
-  }
 
-  // Event listeners
-  document.getElementById('updateAllBtn').addEventListener('click', savePostSettings);
+    // Event listeners
+    document.getElementById('updateAllBtn').addEventListener('click', savePostSettings);
 
-  // Helper functions
-  function showLoader(element) {
-    element.classList.add('loading');
-  }
+    // Helper functions
+    function showLoader() {
+      document.getElementById('loadingPopup').classList.remove('hidden');
+    }
 
-  function hideLoader(element) {
-    element.classList.remove('loading');
-  }
+    function hideLoader() {
+      document.getElementById('loadingPopup').classList.add('hidden');
+    }
 
-  function showElements(elements) {
-    elements.forEach(el => el.style.display = 'block');
-  }
+    function showElements(elements) {
+      elements.forEach(el => el.style.display = 'block');
+    }
 
-  function showToast(message, type = 'info') {
+    function showToast(message, type = 'info') {
     const toastContainer = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = `toast show ${type}`;
