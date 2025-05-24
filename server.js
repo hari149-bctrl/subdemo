@@ -92,7 +92,7 @@ const CommentSchema = new mongoose.Schema({
   },
   retryCount: { type: Number, default: 0 },
   userId: { type: String, required: true } // Track which user this belongs to
-}, { timestamps: true });
+});
 
 const UserSchema = new mongoose.Schema({
   facebookId: { type: String, required: true, unique: true, index:true },
@@ -111,7 +111,7 @@ const UserSchema = new mongoose.Schema({
     username: String,
     pageId: String,
   }]
-}, { timestamps: true });
+});
 
 const PostSetting = mongoose.model('PostSetting', PostSettingSchema);
 const Comment = mongoose.model('Comment', CommentSchema);

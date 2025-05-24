@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy & Terms | BrainyVoyage</title>
+    <link rel="shortcut icon" href="../images/bylogo-removebg-preview.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3a86ff;
+            --secondary: #8338ec;
+            --dark: #212529;
+            --light: #f8f9fa;
+            --accent: #ff006e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 3rem;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo i {
+            margin-right: 15px;
+            color: var(--accent);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .policy-container {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .policy-nav {
+            flex: 1;
+            position: sticky;
+            top: 2rem;
+            align-self: flex-start;
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .policy-nav h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .nav-links {
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            display: block;
+            padding: 0.5rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(58, 134, 255, 0.1);
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+        
+        .policy-content {
+            flex: 3;
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        h2 {
+            color: var(--primary);
+            margin: 2rem 0 1rem;
+            font-size: 1.8rem;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        h2:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 70%;
+            width: 5px;
+            background: var(--accent);
+            border-radius: 5px;
+        }
+        
+        h3 {
+            color: var(--secondary);
+            margin: 1.5rem 0 0.8rem;
+            font-size: 1.4rem;
+        }
+        
+        p, ul {
+            margin-bottom: 1rem;
+        }
+        
+        ul {
+            padding-left: 1.5rem;
+        }
+        
+        li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .highlight {
+            background: rgba(255, 0, 110, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid var(--accent);
+            margin: 1.5rem 0;
+        }
+        
+        .last-updated {
+            text-align: right;
+            font-style: italic;
+            color: #666;
+            margin-top: 2rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            background: var(--dark);
+            color: white;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+        
+        .social-icons {
+            margin-top: 1rem;
+        }
+        
+        .social-icons a {
+            color: white;
+            margin: 0 10px;
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+        
+        .social-icons a:hover {
+            color: var(--accent);
+        }
+        
+        @media (max-width: 768px) {
+            .policy-container {
+                flex-direction: column;
+            }
+            
+            .policy-nav {
+                position: static;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-brain"></i>
+                BrainyVoyage
+            </div>
+            <h1>Privacy Policy & Terms of Service</h1>
+            <p class="subtitle">Last updated: June 10, 2025</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="policy-container">
+            <nav class="policy-nav">
+                <h3>Navigation</h3>
+                <ul class="nav-links">
+                    <li><a href="#privacy" class="active">Privacy Policy</a></li>
+                    <li><a href="#terms">Terms of Service</a></li>
+                    <li><a href="#data-collection">Data Collection</a></li>
+                    <li><a href="#data-use">Data Use</a></li>
+                    <li><a href="#user-rights">Your Rights</a></li>
+                    <li><a href="#prohibited">Prohibited Uses</a></li>
+                    <li><a href="#contact">Contact Us</a></li>
+                </ul>
+            </nav>
+            
+            <div class="policy-content">
+                <section id="privacy">
+                    <h2>Privacy Policy</h2>
+                    <p>This Privacy Policy explains how BrainyVoyage collects, uses, and protects your information when you use our Instagram automation services.</p>
+                    
+                    <div class="highlight">
+                        <p><strong>Key Point:</strong> We only collect data necessary to provide our services and never sell your personal information to third parties.</p>
+                    </div>
+                </section>
+                
+                <section id="data-collection">
+                    <h3>1. Information We Collect</h3>
+                    <p>Our application collects and processes the following information when you connect your Facebook/Instagram account:</p>
+                    <ul>
+                        <li><strong>Facebook Account Information:</strong> Your Facebook user ID, name, email address (if provided), and profile picture.</li>
+                        <li><strong>Page & Instagram Data:</strong> Information about your connected Facebook Pages and Instagram Business Accounts including page names, IDs, access tokens, and Instagram usernames.</li>
+                        <li><strong>Post & Comment Data:</strong> Content of your Instagram posts, captions, comments (including comment text, usernames, timestamps), and engagement metrics.</li>
+                        <li><strong>Settings Data:</strong> Your configured keywords, custom messages, and reply templates stored in our database.</li>
+                    </ul>
+                </section>
+                
+                <section id="data-use">
+                    <h3>2. How We Use Your Information</h3>
+                    <p>We use the collected information to:</p>
+                    <ul>
+                        <li>Provide core functionality of automated comment responses</li>
+                        <li>Send customized messages when keywords are detected</li>
+                        <li>Manage your connected social media accounts</li>
+                        <li>Improve our service and troubleshoot issues</li>
+                        <li>Comply with legal requirements</li>
+                    </ul>
+                </section>
+                
+                <section id="data-sharing">
+                    <h3>3. Data Sharing & Disclosure</h3>
+                    <p>We do not sell your personal data. Information may be shared with:</p>
+                    <ul>
+                        <li><strong>Meta Platforms:</strong> To authenticate and interact with Facebook/Instagram APIs</li>
+                        <li><strong>Service Providers:</strong> MongoDB for data storage, hosting providers</li>
+                        <li><strong>Legal Compliance:</strong> When required by law or to protect our rights</li>
+                    </ul>
+                </section>
+                
+                <section id="data-retention">
+                    <h3>4. Data Retention</h3>
+                    <ul>
+                        <li>User account data is retained until you delete your account</li>
+                        <li>Instagram comments are automatically deleted after 7 days</li>
+                        <li>Access tokens are stored until you revoke them via Facebook</li>
+                    </ul>
+                </section>
+                
+                <section id="user-rights">
+                    <h3>5. Your Rights</h3>
+                    <p>You may:</p>
+                    <ul>
+                        <li>Access, update, or delete your personal data</li>
+                        <li>Disconnect your Facebook/Instagram integration</li>
+                        <li>Opt out of data processing (though this will disable service functionality)</li>
+                    </ul>
+                </section>
+                
+                <section id="security">
+                    <h3>6. Security Measures</h3>
+                    <p>We implement:</p>
+                    <ul>
+                        <li>Secure OAuth 2.0 authentication</li>
+                        <li>Encrypted database storage</li>
+                        <li>Limited access tokens with only required permissions</li>
+                        <li>Regular security audits</li>
+                    </ul>
+                </section>
+                
+                <section id="terms">
+                    <h2>Terms of Service</h2>
+                    <p>By using BrainyVoyage's Instagram automation services, you agree to these Terms of Service.</p>
+                </section>
+                
+                <section id="acceptance">
+                    <h3>1. Acceptance of Terms</h3>
+                    <p>By using this service, you agree to:</p>
+                    <ul>
+                        <li>Comply with all Meta Platform Terms (Facebook/Instagram)</li>
+                        <li>Not use the service for spam or abusive behavior</li>
+                        <li>Maintain responsibility for all automated messages sent</li>
+                    </ul>
+                </section>
+                
+                <section id="service-description">
+                    <h3>2. Service Description</h3>
+                    <p>Our service provides:</p>
+                    <ul>
+                        <li>Automated monitoring of Instagram post comments</li>
+                        <li>Customizable keyword-triggered responses</li>
+                        <li>Comment management tools (reply, hide, delete)</li>
+                    </ul>
+                </section>
+                
+                <section id="prohibited">
+                    <h3>3. Prohibited Uses</h3>
+                    <p>You may not use this service to:</p>
+                    <ul>
+                        <li>Violate Instagram's Community Guidelines</li>
+                        <li>Send harassing, abusive, or misleading messages</li>
+                        <li>Automate interactions with minors' content</li>
+                        <li>Bypass Instagram's rate limits or terms</li>
+                    </ul>
+                </section>
+                
+                <section id="api-usage">
+                    <h3>4. API Usage</h3>
+                    <p>You acknowledge:</p>
+                    <ul>
+                        <li>We use official Facebook Graph API (v22.0)</li>
+                        <li>Service is subject to Meta's API rate limits</li>
+                        <li>Certain features may become unavailable if API access changes</li>
+                    </ul>
+                </section>
+                
+                <section id="disclaimer">
+                    <h3>5. Disclaimer</h3>
+                    <p>We are not responsible for:</p>
+                    <ul>
+                        <li>Changes to Instagram's platform that affect functionality</li>
+                        <li>Content of user-generated comments</li>
+                        <li>Account penalties imposed by Meta for policy violations</li>
+                    </ul>
+                </section>
+                
+                <section id="termination">
+                    <h3>6. Termination</h3>
+                    <p>We may suspend or terminate access for:</p>
+                    <ul>
+                        <li>Violation of these terms</li>
+                        <li>Abusive usage patterns</li>
+                        <li>Legal or regulatory requirements</li>
+                    </ul>
+                </section>
+                
+                <section id="changes">
+                    <h3>7. Changes to Terms</h3>
+                    <p>We reserve the right to modify these policies at anytime and we will notify you via email or in-app notification.</p>
+                </section>
+                
+                <section id="contact">
+                    <h2>Contact Us</h2>
+                    <p>If you have any questions about these policies, please contact us at:</p>
+                    <p><strong>Email:</strong> contact@brainyvoyage.com</p>
+                    <p><strong>Address:</strong> Anantapur, AndhraPradesh</p>
+                </section>
+                
+                <p class="last-updated">Last updated: June 10, 2025</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="/">Home</a>
+                <a href="/privacy-policy">Privacy Policy</a>
+            </div>
+            <div class="social-icons">
+                <a href="https://YouTube.openinapp.co/Brainy_Voyage"><i class="fab fa-youtube"></i></a>
+                <a href="https://WhatsApp.openinapp.co/Brainy_Voyage"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://Insta.openinapp.co/Brainy_Voyage"><i class="fab fa-instagram"></i></a>
+                <a href="https://www.linkedin.com/company/brainy-voyage/"><i class="fab fa-linkedin"></i></a>
+            </div>
+            <p>&copy; 2025 BrainyVoyage. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+                
+                // Update active class
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    link.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+        
+        // Update active link on scroll
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('section');
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
