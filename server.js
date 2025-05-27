@@ -32,11 +32,14 @@ const MongoStore = require('connect-mongo');
 
 app.use(express.json());
 app.use(cors({
-  origin: FRONTEND_URI,
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.FRONTEND_URI 
+    : 'http://localhost:3000',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
+
 
 app.use(session({
   secret: process.env.SESSION_SECRET,
@@ -51,11 +54,9 @@ app.use(session({
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     httpOnly: true,
-    domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined
-  },
+    domain: process.env.NODE_ENV === 'production' ? process.env.DOMAIN : 'localhost'
+  }
 }));
-
-
 
 //-------------------------------------------------- MongoDB connection
 mongoose.connect(MONGODB_URI, {
