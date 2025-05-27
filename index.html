@@ -17,40 +17,84 @@
       --light: #ecf0f1;
       --secondary: #8338ec;
       --accent: #ff006e;
+      --background: #203040;
     }
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: white;
     }
     body {
       display: flex;
       flex-direction: column;
       height: 100vh;
-      background-color: #f5f7fa;
+      background-color: var(--background);
       overflow-x: hidden;
     }
+    body::-webkit-scrollbar {
+      width: 4px;            /* Vertical scrollbar */
+      height: 4px;           /* Horizontal scrollbar */
+    }
+
+    body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    body::-webkit-scrollbar-thumb {
+      background-color: #10b981;  /* Thin green scrollbar */
+      border-radius: 10px;
+    }
+
+
+
+
+
     .sidebar {
       width: 350px;
-      background: white;
+      background-color: var(--background);
       border-right: 1px solid #ddd;
       overflow-y: auto;
       padding: 20px;
+      color: var(--light);
+    }
+    .sidebar::-webkit-scrollbar {
+      width: 4px;            /* Vertical scrollbar */
+      height: 4px;           /* Horizontal scrollbar */
+    }
+
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background-color: #10b981;  /* Thin green scrollbar */
+      border-radius: 10px;
+    }
+
+
+
+
+
+    .sidebar h2{
+      font-size: 15px;
     }
     .main-content {
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      color: white;
     }
     .header {
       padding: 20px;
-      background: white;
+      background-color: var(--background);
       border-bottom: 1px solid #ddd;
+      color: white;
     }
     .header h1 {
-      color: var(--dark);
+      color: var(--light);
       margin-bottom: 10px;
     }
     .stats-bar {
@@ -59,7 +103,7 @@
       margin-bottom: 20px;
     }
     .stat-card {
-      background: white;
+      background-color: var(--dark);
       border-radius: 8px;
       padding: 15px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -74,14 +118,33 @@
     .stat-card p {
       font-size: 24px;
       font-weight: bold;
-      color: var(--dark);
+      color: var(--light);
     }
     .post-details {
       flex: 1;
       padding: 20px;
       overflow-y: auto;
-      background: white;
+      background-color: var(--background);
     }
+    .post-details::-webkit-scrollbar {
+      width: 1px;            /* Vertical scrollbar */
+      height: 4px;           /* Horizontal scrollbar */
+    }
+
+    .post-details::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .post-details::-webkit-scrollbar-thumb {
+      background-color: var(--success);  /* Thin green scrollbar */
+      border-radius: 10px;
+    }
+
+
+
+
+
+
     .post-info {
       margin-bottom: 20px;
       padding-bottom: 20px;
@@ -91,7 +154,7 @@
       margin-bottom: 8px;
     }
     .settings-form {
-      background: #f9f9f9;
+      background-color: var(--background);
       padding: 20px;
       border-radius: 8px;
       margin-bottom: 20px;
@@ -107,8 +170,10 @@
     .form-control {
       width: 100%;
       padding: 10px;
-      border: 1px solid #ddd;
+      border: 1px solid var(--gray);
+      background-color: var(--background);
       border-radius: 4px;
+
     }
     .btn {
       padding: 10px 15px;
@@ -133,7 +198,7 @@
       margin-top: 20px;
     }
     .comment-item {
-      background: white;
+      background-color: var(--background);
       border-radius: 8px;
       padding: 15px;
       margin-bottom: 10px;
@@ -164,13 +229,16 @@
       color: var(--gray);
     }
     .search-bar {
+      margin-top: 10px;
       margin-bottom: 20px;
     }
     .search-input {
       width: 100%;
       padding: 10px;
-      border: 1px solid #ddd;
+      border: none;
       border-radius: 4px;
+      background-color: var(--dark);
+      color: white;
     }
     .post-item {
       padding: 15px;
@@ -195,7 +263,7 @@
       position: fixed;
       top: 20px;
       right: 20px;
-      background: white;
+      background-color: var(--background);
       padding: 15px;
       border-radius: 8px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.2);
@@ -283,7 +351,7 @@
     }
 
     .comments-table th {
-      background-color: #f4f4f4;
+      background-color: var(--dark);
     }
     .retry-btn, .btnInfo{
       border: none;
@@ -397,7 +465,7 @@
       height: 60px;
       border-radius: 5px;
       padding: 5px 10px;
-      margin: 5px;
+      margin: 5px 10px;
       background-color: var(--dark);
     }
 
@@ -407,7 +475,16 @@
       align-items: center;
       column-gap: 10px;
       justify-content: space-between;
-      /* width: 100%; */
+      width: fit-content;
+    }
+    .topBarRight{
+      width: 80%;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: end;
+      column-gap: 15px;
+      color: #ffffff;
     }
     .topImages{
       border-radius: 100%;
@@ -422,6 +499,7 @@
     main{
       display: flex;
       height: 90vh;
+      background-color: var(--background);
     }
     .linesGreen{
       color: #75FB4C;
@@ -446,14 +524,15 @@
       justify-content: center;
       column-gap: 10px;
     }
-    .fbloginBtn, .fblogoutBtn{
-      padding: 5px 10px;
-      border-radius: 5px;
+    .fbloginBtn, .fblogoutBtn, #logoutBtn{
       cursor: pointer;
-      background-color: var(--primary);
       color: white;
+      background-color: transparent;
       border: none;
       height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .highfens {
       display: flex;
@@ -645,9 +724,6 @@
         opacity: 1;
       }
     }
-    .hidden{
-      display: none;
-    }
     .fclose{
       display: flex;
       align-items: center;
@@ -707,9 +783,7 @@
 }
 
 /* Utility class to hide the popup */
-.hidden {
-  display: none;
-}
+
 .fetchCommentsContainer{
   display: flex;
   align-self: center;
@@ -774,50 +848,212 @@ footer {
             color: var(--accent);
         }
   
+  #instaName{
+    color: var(--warning);
+  }
   
+  .notConnected h1 span{
+      font-size: 200px;
+      color: #ff0000;
+  }
+  .notConnected, .getStarted{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    text-align: center;
+    overflow: auto;
+  }
+
+  @media (max-width: 768px) {
+    .notConnected h1 span{
+      font-size: 50px;
+    }
+  }
+
+  .connect-steps {
+  color: #e5e7eb;
+  background-color: #1f2937;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 600px;
+  margin: 20px auto;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+.connect-steps h3 {
+  color: #10b981;
+  margin-bottom: 10px;
+  font-size: 1.4rem;
+}
+
+.connect-steps ol {
+  padding-left: 20px;
+}
+
+.connect-steps ol li {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.connect-steps ol ol {
+  margin-top: 8px;
+  padding-left: 20px;
+  list-style-type: lower-alpha;
+}
+
+
+.getStarted, .notConnected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+  text-align: center;
+  padding: 30px 15px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.warning {
+  color: #ef4444;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  font-size: 1rem;
+
+}
+
+.connect-steps {
+  color: #e5e7eb;
+  background-color: #1f2937;
+  padding: 25px 30px;
+  border-radius: 12px;
+  max-width: 600px;
+  margin-top: 20px;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+  transition: box-shadow 0.3s ease;
+}
+
+.connect-steps:hover {
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.35);
+}
+
+.connect-steps h3 {
+  color: #10b981;
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+}
+
+.connect-steps ol {
+  padding-left: 20px;
+  text-align: left;
+}
+
+.connect-steps ol li {
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.connect-steps ol ol {
+  padding-left: 20px;
+  list-style-type: lower-alpha;
+  margin-top: 8px;
+}
+
+.connect-btn {
+  background-color: #10b981;
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  margin-top: 25px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.connect-btn:hover {
+  background-color: #059669;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .connect-steps {
+    padding: 20px;
+  }
+  .connect-steps h3 {
+    font-size: 1.3rem;
+  }
+}
+
+  #postPermalink{
+    color: dodgerblue;
+  }
+
+  #searchInput:focus{
+    outline: none;
+    color: white;
+    border: 1px solid var(--success);
+  }
+  textarea{
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  textarea::-webkit-scrollbar {
+    width: 1px;            /* Vertical scrollbar */
+    height: 4px;           /* Horizontal scrollbar */
+  }
+
+  textarea::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  textarea::-webkit-scrollbar-thumb {
+    background-color: #10b981;  /* Thin green scrollbar */
+    border-radius: 10px;
+  }
+
+  
+
+
+  .hidden {
+    display: none;
+  }
   </style>
 </head>
 <body>
   <div class="topBar">
     <div class="topBarLeft">
       <img src="./images/bylogo-removebg-preview.png" class="topImages">
+      <button id="logoutBtn"><img src="./images/logout.png" alt="Logout"></button>
       <p>Brainy Voyage</p>
     </div>
-    <div class="highfens">
-      <div class="chevron-right"></div>
-      <div class="chevron-right"></div>
-      <div class="chevron-right"></div>
-      <div class="chevron-right"></div>
-      <div class="chevron-right"></div>
-    </div>
-    <div class="worldLogoContainer">
-      <!-- <img src="./images/public-off.png"> -->
-      <div class="link-symbol dataLoading"></div>
-      <button onclick="facebookLogin()" class="fbloginBtn">Login to FB</button>
-      <button onclick="facebookLogout()" class="fblogoutBtn hidden">Logout</button>
-    </div>
-    <div class="highfens">
-      <!-- <div class="cross">
-        <div class="line line1"></div>
-        <div class="line line2"></div>
-      </div> -->
-      <div class="fclose highfens ">
-        <p class="noConnection ">NO CONNECTION</p>
-        <!-- <div class="cross">
-          <div class="line line1"></div>
-          <div class="line line2"></div>
-        </div> -->
-      </div>
-      <div class="fconnect highfens hidden">
-        <div class="chevron-left"></div>
-        <div class="chevron-left"></div>
-        <div class="chevron-left"></div>
-        <div class="chevron-left"></div>
-        <div class="chevron-left"></div>
-      </div>
-    </div>
-    <div class="topBarLeft">
+    <div class="topBarRight">
+      <p>Instagram Account: <span id="instaName">Not Linked</span></p>
+      <select id="pageDropdown" style="
+          height: 30px;
+          margin: 10px 0px;
+          min-width: 150px;
+          padding: 0px 10px 0px 3px;
+          border-radius: 4px;
+          background-color: var(--dark);
+          color: white;">
+        <option value="">Select a page linked to bussiness</option>
+      </select>
       <p id="user-name">Unknown</p>
+      <button onclick="facebookLogin()" class="fbloginBtn"><img src="./images/add.png" alt="Login"></button>
+      <button onclick="facebookLogout()" class="fblogoutBtn hidden"><img src="./images/logout.png" alt="Logout"></button>
       <img id="user-pic" src="./images/facebook.png" class="topImages">
     </div>
   </div>
@@ -830,15 +1066,31 @@ footer {
 
 
   <main>
-    <div class="sidebar">
-      
-      <h2>Pages linked to bussiness</h2>
-      <select id="pageDropdown" style="
-          height: 30px;
-          margin: 10px 0px;
-          width: 100%;">
-        <option value="">Select a page</option>
-      </select>
+
+    <div class="getStarted">
+    <h1>Login into your Facebook to continue</h1>
+    <p class="warning">For accessing this dashboard you need to connect to your Facebook</p>
+
+    <div class="connect-steps">
+      <h3>Steps to Connect</h3>
+      <ol>
+        <li>Click the login icon at the top right corner</li>
+        <li>You’ll see a pop-up to sign in to your Facebook account</li>
+        <li>
+          After signing in, you will be asked to:
+          <ol type="a">
+            <li>Select the Facebook pages that you want to access</li>
+            <li>Select the Instagram accounts that you want to access</li>
+            <li>Confirm the settings</li>
+          </ol>
+        </li>
+        <li>That's it you will get connected</li>
+      </ol>
+    </div>
+    <p>If you need any help feel free to contact us at: <span style="color: skyblue;">contact@brainyvoyage.com</span></p>
+    </div>
+    
+    <div class="sidebar hidden">
       <h2>Instagram Posts</h2>
       <div class="search-bar">
         <input type="text" class="search-input" id="searchInput" placeholder="Search by caption...">
@@ -847,133 +1099,123 @@ footer {
       <div id="postsContainer"></div>
     </div>
 
-    
-
-      <div class="post-details">
-        <div class="pageData profile-stats">
-          <div class="stat-item">Total Posts: <span class="media"></span></div>
-          <div class="stat-item">Followers: <span class="followers"></span></div>
-          <div class="stat-item">Following: <span class="following"></span></div>
-          <div class="stat-item">
-            <a href="#" class="website-link websiteLink" target="_blank">Website</a>
-          </div>
+    <div class="post-details hidden">
+      <div class="pageData profile-stats">
+        <div class="stat-item">Total Posts: <span class="media"></span></div>
+        <div class="stat-item">Followers: <span class="followers"></span></div>
+        <div class="stat-item">Following: <span class="following"></span></div>
+        <div class="stat-item">
+          <a href="#" class="website-link websiteLink" target="_blank">Website</a>
         </div>
-        <!-- <div id="toast" class="toast"></div> -->
-        <div id="toast-container"></div>
-        <div class="main-content">
-          <div class="header">
-            <h1>Brainy Voyage</h1> 
-            <div class="stats-bar">
-              <div class="stat-card">
-                <h3>Total Comments</h3>
-                <p id="totalComments">0</p>
-              </div>
-              <div class="stat-card">
-                <h3>Messages Sent</h3>
-                <p id="messagesSent">0</p>
-              </div>
-              <div class="stat-card">
-                <h3>Messages Failed</h3>
-                <p id="messagesFailed">0</p>
-              </div>
-              <div class="stat-card">
-                <h3>Messages Pending</h3>
-                <p id="messagesPending">0</p>
-              </div>
-              <div class="stat-card">
-                <h3>Likes</h3>
-                <p id="totalLikes">0</p>
-              </div>
+      </div>
+      <!-- <div id="toast" class="toast"></div> -->
+      <div id="toast-container"></div>
+      <div class="main-content">
+        <div class="header">
+          <h1>Brainy Voyage</h1> 
+          <div class="stats-bar">
+            <div class="stat-card">
+              <h3>Total Comments</h3>
+              <p id="totalComments">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Messages Sent</h3>
+              <p id="messagesSent">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Messages Failed</h3>
+              <p id="messagesFailed">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Messages Pending</h3>
+              <p id="messagesPending">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Likes</h3>
+              <p id="totalLikes">0</p>
             </div>
           </div>
-        <div id="notificationContainer"></div>
-        
-        <div id="postInfo" class="post-info" style="display: none;">
-          <p><strong>ID:</strong> <span id="postId"></span></p>
-          <p><strong>Caption:</strong> <span id="postCaption"></span></p>
-          <p><strong>Permalink:</strong> <a id="postPermalink" target="_blank"></a></p>
-          <p><strong>Time:</strong> <span id="postTime"></span></p>
         </div>
+      <div id="notificationContainer"></div>
+      
+      <div id="postInfo" class="post-info" style="display: none;">
+        <p><strong>ID:</strong> <span id="postId"></span></p>
+        <p><strong>Caption:</strong> <span id="postCaption"></span></p>
+        <p><strong>Permalink:</strong> <a id="postPermalink" target="_blank"></a></p>
+        <p><strong>Time:</strong> <span id="postTime"></span></p>
+      </div>
 
-        <div class="settings-form" id="settingsForm" style="display: none;">
-          <h3>DM Settings</h3>
-          <!-- <button id="fetchData">Fetch 🔃</button> -->
-          <div class="form-group">
-            <label>Current caption:</label>
-            <p id="currentCaption">none</p>
-          </div>
-          <div class="form-group">
-            <label>Enter New Custom caption:</label>
-            <input type="text" class="form-control" id="captionInput" placeholder="Enter custom caption">
-          </div>
-          <div class="form-group">
-            <label>Current Keyword:</label>
-            <p id="currentKeyword">none</p>
-          </div>
-          <div class="form-group">
-            <label>Enter New Keyword:</label>
-            <input type="text" class="form-control" id="keywordInput" placeholder="Enter keyword to trigger DM">
-          </div>
-          <div class="form-group">
-            <label>Current Message Template:</label>
-            <p id="currentMessage">none</p>
-          </div>
-          <div class="form-group">
-            <label>Enter New Message Template:</label>
-            <textarea class="form-control" id="messageInput" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
-          </div>
-          <div class="form-group">
-            <label>Title for the link:</label>
-            <textarea class="form-control" id="btnTitle" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
-          </div>
-          <div class="form-group">
-            <label>Link:</label>
-            <textarea class="form-control" id="btnLink" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
-          </div>
-          <button class="btn btn-primary" id="updateKeywordBtn">Update Keyword</button>
-          <button class="btn btn-primary" id="updateMessageBtn">Update Message</button>
-          <button class="btn btn-success" id="updateAllBtn">Update All</button>
+      <div class="settings-form" id="settingsForm" style="display: none;">
+        <h3>DM Settings</h3>
+        <!-- <button id="fetchData">Fetch 🔃</button> -->
+        <div class="form-group">
+          <label>Current caption:</label>
+          <p id="currentCaption">none</p>
         </div>
+        <div class="form-group">
+          <label>Enter New Custom caption:</label>
+          <input type="text" class="form-control" id="captionInput" placeholder="Enter custom caption">
+        </div>
+        <div class="form-group">
+          <label>Current Keyword:</label>
+          <p id="currentKeyword">none</p>
+        </div>
+        <div class="form-group">
+          <label>Enter New Keyword:</label>
+          <input type="text" class="form-control" id="keywordInput" placeholder="Enter keyword to trigger DM">
+        </div>
+        <div class="form-group">
+          <label>Current Message Template:</label>
+          <p id="currentMessage">none</p>
+        </div>
+        <div class="form-group">
+          <label>Enter New Message Template:</label>
+          <textarea class="form-control" id="messageInput" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Title for the link:</label>
+          <textarea class="form-control" id="btnTitle" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Link:</label>
+          <textarea class="form-control" id="btnLink" rows="4" placeholder="Enter DM template (use {username} and {keyword})"></textarea>
+        </div>
+        <button class="btn btn-success" id="updateAllBtn">Update / Add</button>
+      </div>
 
-        <div class="comments-container" id="commentsContainer" style="display: none;">
-          <div class="fetchCommentsContainer">
-            <h3>Comments</h3>
-            <p class="infoCom">Please refresh the page for new comments</p>
-            <button class="fetchComments"><img src="./images/autorenew.png" alt="🔃">Comments</button>
-          </div>
-          <div id="commentsList"></div>
+      <div class="comments-container" id="commentsContainer" style="display: none;">
+        <div class="fetchCommentsContainer">
+          <h3>Comments</h3>
+          <p class="infoCom">Please refresh the page for new comments</p>
+          <button class="fetchComments"><img src="./images/autorenew.png" alt="🔃">Comments</button>
         </div>
+        <div id="commentsList"></div>
       </div>
     </div>
-
-    <div id="logsModal" class="logs-modal" style="display: none;">
-      <div class="logs-content">
-        <div class="logs-header">
-          <h2>Activity Logs</h2>
-          <div>
-            <button class="btn btn-primary" id="clearLogsBtn">Clear Logs</button>
-            <button class="btn btn-danger" id="closeLogsBtn">Close</button>
-          </div>
-        </div>
-        <div class="logs-body" id="logsBody"></div>
-      </div>
     </div>
+
+    <div class="notConnected hidden">
+      <h2 style="color: red;">Instagram Account not Linked</h2>
+      <p>The page you have selected is not linked to any Instagram bussiness accounts / instagram professional accounts</p>
+    </div>
+
   </main>
+
   <footer>
-        <div class="container">
-            <div class="footer-links">
-                <a href="/">Home</a>
-                <a href="/privacy-policy">Privacy Policy</a>
-            </div>
-            <div class="social-icons">
-                <a href="https://YouTube.openinapp.co/Brainy_Voyage"><i class="fab fa-youtube"></i></a>
-                <a href="https://WhatsApp.openinapp.co/Brainy_Voyage"><i class="fab fa-whatsapp"></i></a>
-                <a href="https://Insta.openinapp.co/Brainy_Voyage"><i class="fab fa-instagram"></i></a>
-                <a href="https://www.linkedin.com/company/brainy-voyage/"><i class="fab fa-linkedin"></i></a>
-            </div>
-            <p>&copy; 2025 BrainyVoyage. All rights reserved.</p>
-        </div>
-    </footer>
+      <div class="container">
+          <div class="footer-links">
+              <a href="/">Home</a>
+              <a href="/privacy-policy">Privacy Policy</a>
+          </div>
+          <div class="social-icons">
+              <a href="https://YouTube.openinapp.co/Brainy_Voyage"><i class="fab fa-youtube"></i></a>
+              <a href="https://WhatsApp.openinapp.co/Brainy_Voyage"><i class="fab fa-whatsapp"></i></a>
+              <a href="https://Insta.openinapp.co/Brainy_Voyage"><i class="fab fa-instagram"></i></a>
+              <a href="https://www.linkedin.com/company/brainy-voyage/"><i class="fab fa-linkedin"></i></a>
+          </div>
+          <p>&copy; 2025 BrainyVoyage. All rights reserved.</p>
+      </div>
+  </footer>
 
  
   
@@ -992,6 +1234,18 @@ footer {
     const fblogoutBtn = document.querySelector('.fblogoutBtn');
     const userPic = document.getElementById('user-pic');
     const fetchComments = document.querySelector('.fetchComments');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const instaName = document.getElementById('instaName');
+
+
+    // Another headache
+    const getStarted = document.querySelector('.getStarted')
+    const sidebar = document.querySelector('.sidebar')
+    const postDetails = document.querySelector('.post-details')
+    const notConnected = document.querySelector('.notConnected')
+
+
+
     // State
     let currentPost = null;
     fetchComments.addEventListener('click', () => {
@@ -1009,6 +1263,10 @@ footer {
       FB.getLoginStatus(function(response) {
         if (response.status === 'connected') {
           keepLogin(response);
+          getStarted.classList.add('hidden')
+          sidebar.classList.remove('hidden')
+          postDetails.classList.remove('hidden')
+
         }
       });
     };
@@ -1022,16 +1280,31 @@ footer {
     })(document, 'script', 'facebook-jssdk');
 
 
+    logoutBtn.addEventListener('click', async() =>{
+        try {
+          const response = await fetch('/logout', {
+              method: 'POST',
+              credentials: 'include'
+          });
+          
+          if (response.ok) {
+              window.location.href = '/dashboard-login';
+          }
+      } catch (error) {
+          console.error('Logout failed:', error);
+      }
+    })
+
 
       async function keepLogin(response){
         try{
           showLoader();
+
           const info = await fetch(`/user/loggedIn/${response.authResponse.userID}`);
           const infoJson = await info.json();
+          console.log(infoJson)
           userPic.src = infoJson.profile;
           userName.textContent = infoJson.name
-          noConnection.classList.add('hidden');
-          fconnect.classList.remove('hidden');
           fbloginBtn.classList.add('hidden');
           fblogoutBtn.classList.remove('hidden');
           
@@ -1041,7 +1314,6 @@ footer {
             selectedPageId = this.value;
             if (selectedPageId) {
               getPageData(selectedPageId);
-              
             }
           });
           try {
@@ -1126,6 +1398,23 @@ footer {
 
 
 
+      const searchInput = document.getElementById('searchInput');
+
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase();
+
+        const postElements = document.querySelectorAll('.post');
+        postElements.forEach(post => {
+          const caption = post.querySelector('.caption').textContent.toLowerCase();
+          const postId = post.querySelector('.user').textContent.toLowerCase();
+
+          const matches = caption.includes(query) || postId.includes(query);
+          post.style.display = matches ? 'block' : 'none';
+        });
+      });
+
+
+
 
 
 
@@ -1142,22 +1431,36 @@ footer {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const insta = await response.json();
+      console.log(insta);
 
-
-      insta.data.forEach(info =>{
-        document.querySelector('.media').textContent = info.media_count;
-        document.querySelector('.followers').textContent = info.followers_count;
-        document.querySelector('.following').textContent = info.follows_count;
-        const websiteLink = document.querySelector('.websiteLink');
-        if (info.website && info.website.trim() !== '') {
-          websiteLink.href = info.website;
-        } else {
-          websiteLink.classList.add('hidden')
-        }
-
-      })
-      loadPosts(ID)
+      if(insta.data.length !== 0){
+        sidebar.classList.remove('hidden')
+        postDetails.classList.remove('hidden')
+        notConnected.classList.add('hidden')
+        insta.data.forEach(info =>{
+          document.querySelector('.media').textContent = info.media_count;
+          document.querySelector('.followers').textContent = info.followers_count;
+          document.querySelector('.following').textContent = info.follows_count;
+          instaName.textContent = info.username ? info.username : "Not Linked";
+          const websiteLink = document.querySelector('.websiteLink');
+          if (info.website && info.website.trim() !== '') {
+            websiteLink.href = info.website;
+          } else {
+            websiteLink.classList.add('hidden')
+          }
+  
+        })
+        loadPosts(ID)
+      }
+      else{
+        instaName.textContent = "Not Linked";
+        sidebar.classList.add('hidden')
+        postDetails.classList.add('hidden')
+        notConnected.classList.remove('hidden')
+      }
     } catch (error) {
+      hideLoader();
+      showLoader("Error occured", "error")
       console.error('Error fetching data:', error);
       throw error;
     }

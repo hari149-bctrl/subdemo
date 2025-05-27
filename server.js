@@ -26,9 +26,10 @@ const FRONTEND_URI = process.env.FRONTEND_URI;
 const DOMAIN = process.env.DOMAIN;
 const REDIRECT_URI = process.env.REDIRECT_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
+const MongoStore = require('connect-mongo');
 
 // Middleware
-app.use(express.static('public'));
+
 app.use(express.json());
 app.use(cors({
   origin: FRONTEND_URI || 'http://localhost:3000',
@@ -36,13 +37,18 @@ app.use(cors({
 }));
 
 app.use(session({
-  secret: SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || 'mySuperSecretKey',
   resave: false,
   saveUninitialized: false,
-  cookie: { 
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/dashboardUsersDB',
+  }),
+  cookie: {
+    maxAge: 60 * 60 * 1000, // 1 hour
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    httpOnly: true,
+  },
 }));
 
 
@@ -187,100 +193,95 @@ dashboarduserSchema.methods.comparePassword = async function(candidatePassword) 
 
 const dashboardUsers = mongoose.model('dashboardUsers', dashboarduserSchema);
 
-// Routes
+// Signup route
 app.post('/dashboard-signup', async (req, res) => {
   try {
-      const { name, email, password } = req.body;
-      
-      const existingUser = await dashboardUsers.findOne({ email });
-      if (existingUser) {
-          return res.status(400).json({ error: 'Email already in use' });
-      }
-      
-      const user = new User({ name, email, password });
-      await user.save();
-      
-      // Create JWT token
-      const token = jwt.sign(
-          { userId: user._id },
-          process.env.JWT_SECRET,
-          { expiresIn: '1h' }
-      );
-      
-      // Set secure HTTP-only cookie
-      res.cookie('token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-          maxAge: 3600000 // 1 hour
-      });
-      
-      res.status(201).json({ 
-          message: 'User created successfully',
-          user: {
-              id: user._id,
-              name: user.name,
-              email: user.email
-          }
-      });
+    const { name, email, password } = req.body;
+
+    const existingUser = await dashboardUsers.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already in use' });
+    }
+
+    const user = new dashboardUsers({ name, email, password });
+    await user.save();
+
+    req.session.userId = user._id;
+
+    res.status(201).json({
+      message: 'User created successfully',
+      user: { id: user._id, name: user.name, email: user.email }
+    });
   } catch (error) {
-      res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
-// Login Route (now sets cookie)
+// Login route
+// app.post('/dashboard-login', async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     const user = await dashboardUsers.findOne({ email });
+//     if (!user) {
+//       return res.status(401).json({ error: 'Invalid credentials' });
+//     }
+
+//     const isMatch = await user.comparePassword(password);
+//     if (!isMatch) {
+//       return res.status(401).json({ error: 'Invalid credentials' });
+//     }
+
+//     req.session.userId = user._id;
+
+//     res.json({
+//       message: 'Login successful',
+//       user: { id: user._id, name: user.name, email: user.email }
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// });
+
 app.post('/dashboard-login', async (req, res) => {
-  try {
-      const { email, password } = req.body;
-      
-      const user = await dashboardUsers.findOne({ email });
-      if (!user) {
-          return res.status(401).json({ error: 'Invalid credentials' });
-      }
-      
-      const isMatch = await user.comparePassword(password);
-      if (!isMatch) {
-          return res.status(401).json({ error: 'Invalid credentials' });
-      }
-      
-      // Create JWT token
-      const token = jwt.sign(
-          { userId: user._id },
-          process.env.JWT_SECRET,
-          { expiresIn: '1h' }
-      );
-      
-      // Set secure HTTP-only cookie
-      res.cookie('token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-          maxAge: 3600000 // 1 hour
-      });
-      
-      res.json({ 
-          message: 'Login successful',
-          user: {
-              id: user._id,
-              name: user.name,
-              email: user.email
-          }
-      });
-  } catch (error) {
-      res.status(500).json({ error: 'Server error' });
-  }
+    try {
+        const { email, password } = req.body;
+
+        const user = await dashboardUsers.findOne({ email });
+        if (!user || !(await user.comparePassword(password))) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        req.session.userId = user._id; // Store user ID in session
+        res.json({ message: 'Login successful' });
+    } catch (err) {
+        res.status(500).json({ error: 'Server error' });
+    }
 });
 
-// Logout Route (clears cookie)
+
+// Logout route
 app.post('/logout', (req, res) => {
-  res.clearCookie('token', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-  });
-  res.json({ message: 'Logged out successfully' });
+    req.session.destroy(() => {
+        res.clearCookie('connect.sid');
+        res.json({ message: 'Logged out successfully' });
+    });
 });
 
+
+// Middleware to protect routes
+function isAuthenticated(req, res, next) {
+    if (req.session && req.session.userId) {
+        return next();
+    }
+    res.redirect('/dashboard-login'); // or whatever your login page is
+}
+
+
+// Example protected route
+app.get('/', isAuthenticated, (req, res) => {
+  res.sendFile(__dirname + '/'); // or res.json({ message: 'Welcome!' })
+});
 //-------------------------------- login ended for dashboard ----------------------------//
 
 
@@ -297,17 +298,25 @@ app.get('/user/loggedIn/:ID', async(req,res) => {
     const response = await User.findOne({ facebookId: Id });
 
     let pages = [];
+    let instaAcc = [];
     response.pageTokens.forEach(p => {
       pages.push({
         id: p.pageId,
         name: p.name
       });
     });
+    response.instagramAccount.forEach(p => {
+      instaAcc.push({
+        id: p.pageId,
+        name: p.username
+      })
+    })
 
     res.status(200).json({
       name: response.name,
       profile: response.picture,
-      pages
+      pages,
+      instaAcc
     });
   }
   catch(err){
@@ -336,125 +345,6 @@ app.get('/user/loggedIn/:ID', async(req,res) => {
 
 
 
-
-
-
-
-// Facebook Login Routes
-// app.get('/auth/facebook', (req, res) => {
-//   const state = generateState();
-//   req.session.state = state;
-  
-//   const scope = [
-//     'pages_show_list',
-//     'instagram_basic',
-//     'instagram_manage_comments',
-//     'pages_read_engagement',
-//     'business_management',
-//     'instagram_manage_messages'
-    
-//   ].join(',');
-  
-//   const url = `https://www.facebook.com/v22.0/dialog/oauth?client_id=${FB_APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${state}&scope=${scope}`;
-  
-//   res.redirect(url);
-// });
-
-// app.get('/auth/facebook/callback', async (req, res) => {
-//   if (req.query.state !== req.session.state) {
-//     return res.status(401).send('Invalid state parameter');
-//   }
-
-//   if (req.query.error) {
-//     return res.status(400).send(`Facebook error: ${req.query.error_description}`);
-//   }
-
-//   try {
-//     // Exchange code for access token
-//     const { data } = await axios.get('https://graph.facebook.com/v22.0/oauth/access_token', {
-//       params: {
-//         client_id: FB_APP_ID,
-//         client_secret: FB_APP_SECRET,
-//         redirect_uri: REDIRECT_URI,
-//         code: req.query.code
-//       }
-//     });
-
-//     // Get user profile
-//     const profile = await axios.get('https://graph.facebook.com/v22.0/me', {
-//       params: {
-//         fields: 'id,name,email',
-//         access_token: data.access_token
-//       }
-//     });
-
-//     // Get long-lived token
-//     const longLived = await axios.get('https://graph.facebook.com/v22.0/oauth/access_token', {
-//       params: {
-//         grant_type: 'fb_exchange_token',
-//         client_id: FB_APP_ID,
-//         client_secret: FB_APP_SECRET,
-//         fb_exchange_token: data.access_token
-//       }
-//     });
-
-//     // Get user pages
-//     const pages = await axios.get(`https://graph.facebook.com/v22.0/me/accounts`, {
-//       params: {
-//         access_token: longLived.data.access_token
-//       }
-//     });
-
-//     // Get Instagram account
-//     const instagram = await axios.get(`https://graph.facebook.com/v22.0/${FACEBOOK_PAGE_ID}`, {
-//       params: {
-//         fields: 'instagram_account',
-//         access_token: pages.data.data[0].access_token
-//       }
-//     });
-//     console.log("instagram:", instagram)
-//     // Create or update user
-//     const user = await User.findOneAndUpdate(
-//       { facebookId: profile.data.id },
-//       {
-//         name: profile.data.name,
-//         email: profile.data.email,
-//         accessToken: data.access_token,
-//         longLivedToken: longLived.data.access_token,
-//         pageTokens: pages.data.data.map(page => ({
-//           pageId: page.id,
-//           token: page.access_token,
-//           name: page.name
-//         })),
-//         instagramAccount: {
-//           id: instagram.data.instagram_business_account.id,
-//           username: '' // Will be filled later
-//         }
-//       },
-//       { upsert: true, new: true }
-//     );
-
-//     // Get Instagram username
-//     const instagramInfo = await axios.get(`https://graph.facebook.com/v22.0/${instagram.data.instagram_business_account.id}`, {
-//       params: {
-//         fields: 'username',
-//         access_token: pages.data.data[0].access_token
-//       }
-//     });
-
-//     user.instagramAccount.username = instagramInfo.data.username;
-//     await user.save();
-
-//     // Store user in session
-//     req.session.userId = user._id;
-
-//     // Redirect to frontend
-//     res.redirect(process.env.FRONTEND_URI || '/');
-//   } catch (error) {
-//     console.error('Login error:', error.response?.data || error.message);
-//     res.status(500).send('Login failed');
-//   }
-// });
 
 app.get('/auth/logout', (req, res) => {
   req.session.destroy();
@@ -496,34 +386,6 @@ async function fetchInstagramPosts(user) {
   }
 }
 
-// async function fetchInstagramPosts(user) {
-//   console.log(user);
-//   console.log("Expected Page ID:", FACEBOOK_PAGE_ID);
-//   console.log("Stored Page IDs:", user.pageTokens.map(p => p.pageId));
-
-//   try {
-//     // Find token for the expected pageId
-//     const pageTokenObj = user.pageTokens.find(p => p.pageId === FACEBOOK_PAGE_ID);
-//     const pageToken = pageTokenObj?.token;
-//     if (!pageToken) throw new Error('Page token not found');
-
-//     console.log('⏳ Fetching Instagram posts...');
-//     const response = await axios.get(
-//       `https://graph.facebook.com/v22.0/${user.instagramAccount.id}/media`,
-//       {
-//         params: {
-//           fields: 'id,caption,permalink,timestamp,comments_count,like_count,comments{hidden,id,text,timestamp,username}',
-//           access_token: pageToken
-//         },
-//         timeout: 10000
-//       }
-//     );
-//     return response.data.data;
-//   } catch (error) {
-//     console.error('❌ Instagram API Error:', error.response?.data || error.message);
-//     throw error;
-//   }
-// }
 
 
 async function fetchComments(user) {
@@ -981,28 +843,7 @@ app.post('/api/settings', async (req, res) => {
     res.status(500).json({ error: 'Failed to save settings' });
   }
 });
-// app.get('/api/pages', async (req, res) => {
-//   try {
-//     // console.log('loggedIn', loggedInUser)
-//     // const data = await User.findOne({facebookId: loggedInUser})
-//     // console.log(data)
-//     if (!data) throw new Error('Page token not found');
 
-//     const response = await axios.get(
-//       `https://graph.facebook.com/v22.0/${FACEBOOK_PAGE_ID}`,
-//       {
-//         params: {
-//           fields: 'access_token,name,instagram_business_account',
-//           access_token: pageToken
-//         }
-//       }
-//     );
-//     res.json([response.data]);
-//   } catch (err) {
-//     console.error('Error fetching pages:', err);
-//     res.status(500).json({ error: 'Failed to fetch page details' });
-//   }
-// });
 
 app.get('/api/settings/:postId/:ID', async (req, res) => {
   try {
@@ -1042,25 +883,6 @@ app.get('/api/settings/:postId/:ID', async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-// app.post('/api/userInfoData', (req, res) => {
-//   const { data1, data2, data3 } = req.body;
-
-//   console.log('Data 1:', data1);
-//   console.log('Data 2:', data2);
-//   console.log('Data 3:', data3);
-
-//   // Do something with the data...
-//   res.json({ message: 'Received all 3 JSON objects successfully!' });
-// });
 
 
 
@@ -1178,53 +1000,6 @@ app.post('/auth/facebook/callback', async (req, res) => {
   }
 });
 
-// Add this route to check auth status
-// app.get('/auth/status', (req, res) => {
-//   if (!req.session.userId) {
-//     return res.json({ authenticated: false });
-//   }
-  
-//   User.findById(req.session.userId)
-//     .then(user => {
-//       if (!user) {
-//         return res.json({ authenticated: false });
-//       }
-//       res.json({
-//         authenticated: true,
-//         user: {
-//           id: user._id,
-//           name: user.name,
-//           email: user.email
-//         }
-//       });
-//     })
-//     .catch(error => {
-//       console.error('Auth status error:', error);
-//       res.json({ authenticated: false });
-//     });
-// });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1290,6 +1065,8 @@ app.get('/ping', async (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+app.use(express.static('public'));
 
 const keepAlive = () => {
   setInterval(async () => {

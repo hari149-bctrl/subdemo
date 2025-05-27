@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found | BrainyVoyage</title>
+    <style>
+        /* Base Styles */
+        :root {
+            --primary: #2a4365;
+            --secondary: #1e3a8a;
+            --accent: #3b82f6;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --text: #334155;
+            --highlight: #f59e0b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--text);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Navigation */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 5%;
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo span {
+            color: var(--accent);
+        }
+        
+        /* Error Content */
+        .error-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .error-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .error-code {
+            font-size: 8rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            line-height: 1;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .error-code::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 5px;
+            bottom: 15px;
+            left: 0;
+            background: linear-gradient(90deg, var(--accent), var(--highlight));
+            z-index: -1;
+            opacity: 0.7;
+        }
+        
+        .error-title {
+            font-size: 2.5rem;
+            color: var(--dark);
+            margin-bottom: 1.5rem;
+        }
+        
+        .error-message {
+            font-size: 1.2rem;
+            margin-bottom: 2.5rem;
+            color: var(--text);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .error-actions {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            margin-top: 3rem;
+        }
+        
+        .cta-button {
+            background-color: var(--accent);
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .cta-button:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .secondary-button {
+            background-color: transparent;
+            color: var(--accent);
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: 2px solid var(--accent);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .secondary-button:hover {
+            background-color: var(--accent);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* Animation */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .astronaut {
+            width: 200px;
+            margin: 0 auto 2rem;
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .error-code {
+                font-size: 6rem;
+            }
+            
+            .error-title {
+                font-size: 2rem;
+            }
+            
+            .error-actions {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+            }
+            
+            .cta-button, .secondary-button {
+                width: 100%;
+                max-width: 250px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="#" class="logo">Brainy<span>Voyage</span></a>
+    </nav>
+    
+    <main class="error-container">
+        <div class="error-content">
+            <img src="https://assets.codepen.io/1538474/astronaut.svg" alt="Lost astronaut" class="astronaut">
+            <h1 class="error-code">404</h1>
+            <h2 class="error-title">Lost in Space</h2>
+            <p class="error-message">
+                The page you're looking for doesn't exist or has been moved. 
+                Don't worry though, our team of digital astronauts can help you 
+                navigate back to safety.
+            </p>
+            <div class="error-actions">
+                <a href="#" class="cta-button">Return Home</a>
+                <a href="#" class="secondary-button">Contact Support</a>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="footer">
+        <p>&copy; 2025 BrainyVoyage. All rights reserved.</p>
+    </footer>
+</body>
+</html>
