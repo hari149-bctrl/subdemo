@@ -33,7 +33,7 @@ const MongoStore = require('connect-mongo');
 app.use(express.json());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URI 
+    ? 'https://instabot.brainyvoyage.com' 
     : 'http://localhost:3000',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
