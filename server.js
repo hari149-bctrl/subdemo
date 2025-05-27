@@ -32,22 +32,26 @@ const MongoStore = require('connect-mongo');
 
 app.use(express.json());
 app.use(cors({
-  origin: FRONTEND_URI || 'http://localhost:3000',
-  credentials: true
+  origin: FRONTEND_URI,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'mySuperSecretKey',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/dashboardUsersDB',
+    mongoUrl: process.env.MONGODB_URI,
+    ttl: 24 * 60 * 60
   }),
   cookie: {
     maxAge: 60 * 60 * 1000, // 1 hour
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     httpOnly: true,
+    domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined
   },
 }));
 
@@ -244,19 +248,43 @@ app.post('/dashboard-signup', async (req, res) => {
 // });
 
 app.post('/dashboard-login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-        const user = await dashboardUsers.findOne({ email });
-        if (!user || !(await user.comparePassword(password))) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+    const user = await dashboardUsers.findOne({ email });
+    if (!user || !(await user.comparePassword(password))) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Create new session
+    req.session.regenerate((err) => {
+      if (err) {
+        console.error('Session regeneration error:', err);
+        return res.status(500).json({ error: 'Session error' });
+      }
+
+      req.session.userId = user._id;
+      
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.status(500).json({ error: 'Session error' });
         }
 
-        req.session.userId = user._id; // Store user ID in session
-        res.json({ message: 'Login successful' });
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
+        res.json({ 
+          message: 'Login successful',
+          user: {
+            id: user._id,
+            name: user.name,
+            email: user.email
+          }
+        });
+      });
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 
