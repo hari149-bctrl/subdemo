@@ -34,35 +34,24 @@ const JWT_SECRET = process.env.JWT_SECRET;
 app.use(express.json());
 
 
-// Session Configuration (Updated)
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
     mongoUrl: process.env.MONGODB_URI,
-    ttl: 24 * 60 * 60
+    ttl: 24 * 60 * 60 // 1 day
   }),
   cookie: {
     maxAge: 60 * 60 * 1000, // 1 hour
-    secure: true, // Must be true in production
-    sameSite: 'none', // Must be 'none' for cross-site cookies
-    httpOnly: true,
-    domain: '.brainyvoyage.com' // Notice the leading dot for subdomains
+    secure: process.env.NODE_ENV === 'production', // only true in production
+    sameSite: 'lax', // default behavior, works for same-origin
+    httpOnly: true
+    // No need for 'domain' here
   }
 }));
 
-// CORS Configuration (Updated)
-app.use(cors({
-  origin: [
-    'https://instabot.brainyvoyage.com',
-    'https://www.instabot.brainyvoyage.com'
-  ],
-  credentials: true,
-  exposedHeaders: ['set-cookie'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
-}));
+
 
 
 //-------------------------------------------------- MongoDB connection
