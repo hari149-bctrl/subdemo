@@ -32,7 +32,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // Middleware
 
 app.use(express.json());
-
+app.set('trust proxy', 1);
 
 app.use(session({
   secret: process.env.SESSION_SECRET,
@@ -47,7 +47,6 @@ app.use(session({
     secure: process.env.NODE_ENV === 'production', // only true in production
     sameSite: 'lax', // default behavior, works for same-origin
     httpOnly: true
-    // No need for 'domain' here
   }
 }));
 
@@ -218,31 +217,7 @@ app.post('/dashboard-signup', async (req, res) => {
   }
 });
 
-// Login route
-// app.post('/dashboard-login', async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
 
-//     const user = await dashboardUsers.findOne({ email });
-//     if (!user) {
-//       return res.status(401).json({ error: 'Invalid credentials' });
-//     }
-
-//     const isMatch = await user.comparePassword(password);
-//     if (!isMatch) {
-//       return res.status(401).json({ error: 'Invalid credentials' });
-//     }
-
-//     req.session.userId = user._id;
-
-//     res.json({
-//       message: 'Login successful',
-//       user: { id: user._id, name: user.name, email: user.email }
-//     });
-//   } catch (error) {
-//     res.status(500).json({ error: 'Server error' });
-//   }
-// });
 
 app.post('/dashboard-login', async (req, res) => {
   try {
