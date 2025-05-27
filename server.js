@@ -1,4 +1,5 @@
 require('dotenv').config();
+const MongoStore = require('connect-mongo');
 const jwt = require('jsonwebtoken');
 const express = require('express');
 const axios = require('axios');
@@ -26,21 +27,14 @@ const FRONTEND_URI = process.env.FRONTEND_URI;
 const DOMAIN = process.env.DOMAIN;
 const REDIRECT_URI = process.env.REDIRECT_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
-const MongoStore = require('connect-mongo');
+
 
 // Middleware
 
 app.use(express.json());
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? 'https://instabot.brainyvoyage.com' 
-    : 'http://localhost:3000',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-}));
 
 
+// Session Configuration (Updated)
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
@@ -51,12 +45,25 @@ app.use(session({
   }),
   cookie: {
     maxAge: 60 * 60 * 1000, // 1 hour
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: true, // Must be true in production
+    sameSite: 'none', // Must be 'none' for cross-site cookies
     httpOnly: true,
-    domain: process.env.NODE_ENV === 'production' ? process.env.DOMAIN : 'localhost'
+    domain: '.brainyvoyage.com' // Notice the leading dot for subdomains
   }
 }));
+
+// CORS Configuration (Updated)
+app.use(cors({
+  origin: [
+    'https://instabot.brainyvoyage.com',
+    'https://www.instabot.brainyvoyage.com'
+  ],
+  credentials: true,
+  exposedHeaders: ['set-cookie'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+}));
+
 
 //-------------------------------------------------- MongoDB connection
 mongoose.connect(MONGODB_URI, {
