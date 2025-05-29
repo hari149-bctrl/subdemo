@@ -12,21 +12,13 @@ const cookieParser = require('cookie-parser');
 
 const app = express();
 
-
-const INSTAGRAM_BUSINESS_ID = process.env.INSTAGRAM_BUSINESS_ID;
-// const FACEBOOK_PAGE_ID = process.env.FACEBOOK_PAGE_ID;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const PORT = process.env.PORT;
 const FB_APP_ID = process.env.APP_ID;
 const FB_APP_SECRET = process.env.APP_SECRET;
-const SESSION_SECRET = process.env.SESSION_SECRET;
 const MONGODB_URI = process.env.MONGODB_URI;
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = process.env.CHAT_ID;
-const FRONTEND_URI = process.env.FRONTEND_URI;
-const DOMAIN = process.env.DOMAIN;
-const REDIRECT_URI = process.env.REDIRECT_URI;
-const JWT_SECRET = process.env.JWT_SECRET;
 
 
 // Middleware
@@ -609,24 +601,24 @@ app.post('/webhook', async (req, res) => {
   try {
     console.log('Webhook Data:', JSON.stringify(req.body, null, 2));
     
-    if (req.body.object === 'instagram' && req.body.entry) {
-      for (const entry of req.body.entry) {
-        if (entry.changes && entry.changes[0].field === 'comments') {
-          const postId = entry.changes[0].value.media_id;
-          const commentId = entry.changes[0].value.id;
+    // if (req.body.object === 'instagram' && req.body.entry) {
+    //   for (const entry of req.body.entry) {
+    //     if (entry.changes && entry.changes[0].field === 'comments') {
+    //       const postId = entry.changes[0].value.media_id;
+    //       const commentId = entry.changes[0].value.id;
           
-          // Find which user this belongs to by finding the post setting
-          const setting = await PostSetting.findOne({ postId });
-          if (!setting) continue;
+    //       // Find which user this belongs to by finding the post setting
+    //       const setting = await PostSetting.findOne({ postId });
+    //       if (!setting) continue;
           
-          const user = await User.findById(setting.userId);
-          if (!user) continue;
+    //       const user = await User.findById(setting.userId);
+    //       if (!user) continue;
           
-          const comment = await fetchCommentDetails(user, commentId);
-          await saveAndProcessComment(user, postId, comment);
-        }
-      }
-    }
+    //       const comment = await fetchCommentDetails(user, commentId);
+    //       await saveAndProcessComment(user, postId, comment);
+    //     }
+    //   }
+    // }
     
     res.sendStatus(200);
   } catch (err) {
