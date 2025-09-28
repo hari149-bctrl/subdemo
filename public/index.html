@@ -773,8 +773,39 @@ footer {
         .social-icons a:hover {
             color: var(--accent);
         }
-  
-  
+        #pageDropdown:hover {
+            border-color: #afb8c1;
+        }
+
+        #pageDropdown:focus {
+            outline: none;
+            border-color: #0969da;
+            box-shadow: 0 0 0 2px rgba(9, 105, 218, 0.1);
+        }
+
+        #autoMessageToggle:checked + span {
+            background: #0969da;
+        }
+
+        #autoMessageToggle:checked + span + span {
+            transform: translateX(20px);
+        }
+
+        #autoMessageToggle:checked + span {
+            background: #0969da !important;
+        }
+        #autoMessageToggle:checked + span + span {
+            transform: translateX(20px) !important;
+        }
+
+        /* Optional: Add hover effect */
+        #autoMessageToggle:hover + span {
+            background: #afb8c1;
+        }
+
+        #autoMessageToggle:checked:hover + span {
+            background: #0858c4 !important;
+        }
   </style>
 </head>
 <body>
@@ -833,12 +864,89 @@ footer {
     <div class="sidebar">
       
       <h2>Pages linked to bussiness</h2>
-      <select id="pageDropdown" style="
+      <!-- <select id="pageDropdown" style="
           height: 30px;
           margin: 10px 0px;
           width: 100%;">
         <option value="">Select a page</option>
-      </select>
+      </select> -->
+
+      <div style="
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 12px 0px;
+          background: #fafbfc;
+          border: none;
+          border-radius: 8px;
+      ">
+          <div style="flex: 1; min-width: 0;">
+              <select id="pageDropdown" style="
+                  width: 100%;
+                  height: 36px;
+                  padding: 0 12px;
+                  border: 1px solid #d0d7de;
+                  border-radius: 6px;
+                  background: white;
+                  font-size: 14px;
+                  color: #24292f;
+                  cursor: pointer;
+                  transition: border-color 0.2s ease;
+              ">
+                  <option value="">Select page</option>
+              </select>
+          </div>
+          
+          <div style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              flex-shrink: 0;
+          ">
+              <span style="
+                  font-size: 13px;
+                  color: #656d76;
+                  font-weight: 500;
+              ">Auto-send</span>
+              <label style="
+                  display: inline-block;
+                  position: relative;
+                  width: 40px;
+                  height: 20px;
+              ">
+                  <input type="checkbox" id="autoMessageToggle" style="
+                      opacity: 0;
+                      width: 0;
+                      height: 0;
+                  ">
+                  <span style="
+                      position: absolute;
+                      cursor: pointer;
+                      top: 0;
+                      left: 0;
+                      right: 0;
+                      bottom: 0;
+                      background: #d0d7de;
+                      transition: .2s;
+                      border-radius: 20px;
+                  "></span>
+                  <span style="
+                      position: absolute;
+                      content: '';
+                      height: 16px;
+                      width: 16px;
+                      left: 2px;
+                      bottom: 2px;
+                      background: white;
+                      transition: .2s;
+                      border-radius: 50%;
+                  "></span>
+              </label>
+          </div>
+      </div>
+
+
+      
       <h2>Instagram Posts</h2>
       <div class="search-bar">
         <input type="text" class="search-input" id="searchInput" placeholder="Search by caption...">
@@ -1666,6 +1774,59 @@ footer {
       toast.addEventListener('transitionend', () => toast.remove()); // Remove after fade-out
     }, 3000);
   }
+
+
+
+
+
+  // Toggle btn and api
+  // Initialize the toggle based on selected page
+  document.getElementById('pageDropdown').addEventListener('change', function() {
+      const selectedPageId = this.value;
+      const toggle = document.getElementById('autoMessageToggle');
+      console.log("Selected Page ID:", selectedPageId); // Debug log
+      if (selectedPageId) {
+          // Fetch the autoSendMessages status for the selected page
+          fetch(`/api/pages/${selectedPageId}/auto-send-status`)
+              .then(response => response.json())
+              .then(data => {
+                  toggle.checked = data.autoSendMessages;
+                  toggle.disabled = false;
+              })
+              .catch(error => {
+                  console.error('Error fetching auto-send status:', error);
+                  toggle.checked = false;
+                  toggle.disabled = false;
+              });
+      } else {
+          toggle.checked = false;
+          toggle.disabled = true;
+      }
+  });
+
+  // Update autoSendMessages when toggle is changed
+  document.getElementById('autoMessageToggle').addEventListener('change', function() {
+      const selectedPageId = document.getElementById('pageDropdown').value;
+      const isEnabled = this.checked;
+      
+      if (selectedPageId) {
+          fetch(`/api/pages/${selectedPageId}/auto-send`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ enabled: isEnabled })
+          })
+          .then(response => response.json())
+          .then(data => {
+              console.log('Auto-send updated:', data);
+          })
+          .catch(error => {
+              console.error('Error updating auto-send:', error);
+          });
+      }
+  });
+
   </script>
 
 </body>

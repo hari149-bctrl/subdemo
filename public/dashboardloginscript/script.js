@@ -16,7 +16,7 @@ document.getElementById('loginForm')?.addEventListener('submit', async function(
         
         if (response.ok) {
             showMessage('loginMessage', 'Login successful', 'success');
-            window.location.href = '../index.html';
+            window.location.href = '../';
         } else {
             showMessage('loginMessage', data.error, 'error');
         }
@@ -67,7 +67,7 @@ document.getElementById('logoutBtn')?.addEventListener('click', async function()
         });
         
         if (response.ok) {
-            window.location.href = '/index.html';
+            window.location.href = '/dashboard-login';
         }
     } catch (error) {
         console.error('Logout failed:', error);
