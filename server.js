@@ -331,7 +331,7 @@ app.get('/user/loggedIn/:ID', async(req,res) => {
     try {
       const { pageId } = req.params;
       
-      console.log(`🔍 Fetching auto-send status for page: ${pageId}`);
+      // console.log(`🔍 Fetching auto-send status for page: ${pageId}`);
       
       if (!pageId || pageId.trim() === '') {
         return res.status(400).json({ 
@@ -367,7 +367,7 @@ app.get('/user/loggedIn/:ID', async(req,res) => {
       // Handle cases where autoSendMessages might not exist (legacy data)
       const autoSendStatus = page.autoSendMessages !== undefined ? page.autoSendMessages : false;
       
-      console.log(`✅ Auto-send status for ${page.name}: ${autoSendStatus}`);
+      // console.log(`✅ Auto-send status for ${page.name}: ${autoSendStatus}`);
       
       res.json({
         success: true,
@@ -401,7 +401,7 @@ app.get('/user/loggedIn/:ID', async(req,res) => {
       const { pageId } = req.params;
       const { enabled } = req.body;
 
-      console.log(`🔄 Updating auto-send for page ${pageId} to: ${enabled}`);
+      // console.log(`🔄 Updating auto-send for page ${pageId} to: ${enabled}`);
       
       if (typeof enabled !== 'boolean') {
         return res.status(400).json({ 
@@ -428,7 +428,7 @@ app.get('/user/loggedIn/:ID', async(req,res) => {
         });
       }
 
-      console.log(`✅ Auto-send updated for page ${pageId}: ${enabled}`);
+      // console.log(`✅ Auto-send updated for page ${pageId}: ${enabled}`);
       
       // Get updated page info for response
       const user = await User.findOne(
@@ -869,7 +869,7 @@ async function sendMessageWithButtons(userParam, commentId, message, title, link
     // Determine if userParam is a user object or page ID string
     if (typeof userParam === 'object' && userParam.pageTokens) {
       // Case 1: userParam is a USER OBJECT (from automated sending)
-      console.log("🔑 Automated sending - using user object");
+      // console.log("🔑 Automated sending - using user object");
       const firstPage = userParam.pageTokens[0];
       if (!firstPage) {
         throw new Error('No page tokens available for this user');
@@ -879,7 +879,7 @@ async function sendMessageWithButtons(userParam, commentId, message, title, link
       pageName = firstPage.name;
     } else if (typeof userParam === 'string') {
       // Case 2: userParam is a PAGE ID STRING (from UI)
-      console.log("🔑 UI sending - using page ID:", userParam);
+      // console.log("🔑 UI sending - using page ID:", userParam);
       const accInfo = await User.findOne(
         { "pageTokens.pageId": userParam },
         { "pageTokens.$": 1 }
@@ -896,7 +896,7 @@ async function sendMessageWithButtons(userParam, commentId, message, title, link
       throw new Error('Invalid parameter: expected user object or page ID string');
     }
 
-    console.log("🔑 Using page:", pageName, "ID:", pageId);
+    // console.log("🔑 Using page:", pageName, "ID:", pageId);
     
     const response = await axios.post(
       `https://graph.facebook.com/v22.0/${pageId}/messages`,
@@ -952,7 +952,7 @@ async function dispatchMessages(user) {
       retryCount: { $lt: 3 },
       // userId: user._id
     }).limit(20);
-    console.log("Pending comments:", pendingComments);
+    // console.log("Pending comments:", pendingComments);
     if (pendingComments.length === 0) {
       console.log('ℹ️ No pending messages to process');
       return;
@@ -1490,7 +1490,7 @@ app.post('/auth/facebook/callback', async (req, res) => {
       }
     });
 
-    console.log('👤 User profile fetched:', profile.data.name);
+    // console.log('👤 User profile fetched:', profile.data.name);
 
     // Get long-lived token
     const longLivedToken = await axios.get(`https://graph.facebook.com/v22.0/oauth/access_token`, {
@@ -1502,7 +1502,7 @@ app.post('/auth/facebook/callback', async (req, res) => {
       }
     });
 
-    console.log('🔑 Long-lived token obtained');
+    // console.log('🔑 Long-lived token obtained');
 
     // Get user pages
     const pages = await axios.get(`https://graph.facebook.com/v22.0/me/accounts`, {
@@ -1511,7 +1511,7 @@ app.post('/auth/facebook/callback', async (req, res) => {
       }
     });
 
-    console.log(`📄 Found ${pages.data.data.length} Facebook pages`);
+    // console.log(`📄 Found ${pages.data.data.length} Facebook pages`);
 
     // Build array of pages with access tokens
     const pageTokens = pages.data.data.map(page => ({
@@ -1548,7 +1548,7 @@ app.post('/auth/facebook/callback', async (req, res) => {
       }
     }
 
-    console.log(`📊 Found ${instagram.length} Instagram accounts`);
+    // console.log(`📊 Found ${instagram.length} Instagram accounts`);
 
     // Format Instagram accounts
     const formattedIGAccounts = instagram.map(acc => ({
@@ -1559,7 +1559,7 @@ app.post('/auth/facebook/callback', async (req, res) => {
 
     // Find existing user to preserve autoSendMessages settings
     const existingUser = await User.findOne({ facebookId: profile.data.id });
-    console.log(existingUser ? '🔄 Updating existing user' : '🆕 Creating new user');
+    // console.log(existingUser ? '🔄 Updating existing user' : '🆕 Creating new user');
 
     let updatedPageTokens = pageTokens;
     
@@ -1572,7 +1572,7 @@ app.post('/auth/facebook/callback', async (req, res) => {
         
         // If page exists and has autoSendMessages setting, preserve it
         if (existingPage && existingPage.autoSendMessages !== undefined) {
-          console.log(`💾 Preserving autoSendMessages: ${existingPage.autoSendMessages} for page ${newPage.name}`);
+          // console.log(`💾 Preserving autoSendMessages: ${existingPage.autoSendMessages} for page ${newPage.name}`);
           return {
             ...newPage,
             autoSendMessages: existingPage.autoSendMessages
@@ -1580,7 +1580,7 @@ app.post('/auth/facebook/callback', async (req, res) => {
         }
         
         // New page or no existing setting - use default (false)
-        console.log(`⚙️ Setting autoSendMessages: false for new page ${newPage.name}`);
+        // console.log(`⚙️ Setting autoSendMessages: false for new page ${newPage.name}`);
         return {
           ...newPage,
           autoSendMessages: false
@@ -1592,7 +1592,7 @@ app.post('/auth/facebook/callback', async (req, res) => {
         ...page,
         autoSendMessages: false
       }));
-      console.log('🎯 New user - all pages set to autoSendMessages: false');
+      // console.log('🎯 New user - all pages set to autoSendMessages: false');
     }
 
     // Create or update user in database

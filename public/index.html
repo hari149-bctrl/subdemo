@@ -1784,7 +1784,7 @@ footer {
   document.getElementById('pageDropdown').addEventListener('change', function() {
       const selectedPageId = this.value;
       const toggle = document.getElementById('autoMessageToggle');
-      console.log("Selected Page ID:", selectedPageId); // Debug log
+      // console.log("Selected Page ID:", selectedPageId); // Debug log
       if (selectedPageId) {
           // Fetch the autoSendMessages status for the selected page
           fetch(`/api/pages/${selectedPageId}/auto-send-status`)
@@ -1819,7 +1819,7 @@ footer {
           })
           .then(response => response.json())
           .then(data => {
-              console.log('Auto-send updated:', data);
+              // console.log('Auto-send updated:', data);
           })
           .catch(error => {
               console.error('Error updating auto-send:', error);
