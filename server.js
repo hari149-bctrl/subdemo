@@ -105,6 +105,10 @@ const UserSchema = new mongoose.Schema({
     pageId: String,
     token: String,
     name: String,
+    autoSendMessages: { 
+      type: Boolean, 
+      default: false
+    }
   }],
   instagramAccount: [{
     id: String,
@@ -322,7 +326,140 @@ app.get('/user/loggedIn/:ID', async(req,res) => {
 
 
 
+  // Enhanced auto-send status endpoint
+  app.get('/api/pages/:pageId/auto-send-status', async (req, res) => {
+    try {
+      const { pageId } = req.params;
+      
+      console.log(`🔍 Fetching auto-send status for page: ${pageId}`);
+      
+      if (!pageId || pageId.trim() === '') {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Page ID is required' 
+        });
+      }
 
+      const user = await User.findOne(
+        { "pageTokens.pageId": pageId },
+        { 
+          name: 1,
+          "pageTokens.$": 1
+        }
+      );
+
+      if (!user) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Page not found. Please make sure you are logged in with the correct account.' 
+        });
+      }
+
+      const page = user.pageTokens[0];
+      
+      if (!page) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Page data not found' 
+        });
+      }
+
+      // Handle cases where autoSendMessages might not exist (legacy data)
+      const autoSendStatus = page.autoSendMessages !== undefined ? page.autoSendMessages : false;
+      
+      console.log(`✅ Auto-send status for ${page.name}: ${autoSendStatus}`);
+      
+      res.json({
+        success: true,
+        autoSendMessages: autoSendStatus,
+        page: {
+          id: page.pageId,
+          name: page.name,
+          tokenExists: !!page.token
+        },
+        user: {
+          id: user._id,
+          name: user.name
+        },
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('❌ Error fetching auto-send status:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Internal server error',
+        message: 'Failed to fetch auto-send status. Please try again.'
+      });
+    }
+  });
+
+
+  // Update auto-send status for a specific page
+  app.post('/api/pages/:pageId/auto-send', async (req, res) => {
+    try {
+      const { pageId } = req.params;
+      const { enabled } = req.body;
+
+      console.log(`🔄 Updating auto-send for page ${pageId} to: ${enabled}`);
+      
+      if (typeof enabled !== 'boolean') {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Enabled parameter must be a boolean' 
+        });
+      }
+
+      // Update the specific page's autoSendMessages field
+      const result = await User.updateOne(
+        { "pageTokens.pageId": pageId },
+        { 
+          $set: { 
+            "pageTokens.$.autoSendMessages": enabled 
+          } 
+        }
+      );
+
+      if (result.matchedCount === 0) {
+        console.log(`❌ Page not found for update: ${pageId}`);
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Page not found' 
+        });
+      }
+
+      console.log(`✅ Auto-send updated for page ${pageId}: ${enabled}`);
+      
+      // Get updated page info for response
+      const user = await User.findOne(
+        { "pageTokens.pageId": pageId },
+        { 
+          name: 1,
+          "pageTokens.$": 1 
+        }
+      );
+
+      const updatedPage = user.pageTokens[0];
+
+      res.json({
+        success: true,
+        message: `Auto-send ${enabled ? 'enabled' : 'disabled'} for ${updatedPage.name}`,
+        autoSendMessages: enabled,
+        page: {
+          id: updatedPage.pageId,
+          name: updatedPage.name
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ Error updating auto-send:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to update auto-send status',
+        details: error.message 
+      });
+    }
+  });
 
 
 
@@ -614,13 +751,155 @@ async function saveCommentsToMongo(allData, user) {
   }
 }
 
-async function sendMessageWithButtons(user, commentId, message, title, link) {
-  try {
-    const accInfo = await User.findOne({"pageTokens.pageId": user},{"pageTokens.$": 1})
+// async function sendMessageWithButtons(user, commentId, message, title, link) {
+//   try {
+//     console.log("User data:",user);
+//     const accInfo = await User.findOne({"pageTokens.pageId": user},{"pageTokens.$": 1})
     
+//     console.log("ACCInfo",accInfo);
+//     const response = await axios.post(
+//       `https://graph.facebook.com/v22.0/${user}/messages`,
+//       {
+//         recipient: { comment_id: commentId },
+//         message: {
+//           attachment: {
+//             type: "template",
+//             payload: {
+//               template_type: "button",
+//               text: message,
+//               buttons: [
+//                 {
+//                   type: "web_url",
+//                   url: link,
+//                   title: title
+//                 },
+//                 {
+//                   type: "web_url",
+//                   url: "https://WhatsApp.openinapp.co/Brainy_Voyage",
+//                   title: "Join WhatsApp"
+//                 },
+//                 {
+//                   type: "web_url",
+//                   url: "https://YouTube.openinapp.co/Brainy_Voyage",
+//                   title: "Subcribe Us"
+//                 }
+//               ]
+//             }
+//           }
+//         }
+//       },
+//       {
+//         params: { access_token: accInfo.pageTokens[0].token },
+//         timeout: 10000
+//       }
+//     );
+//     return response.data;
+//   } catch (error) {
+//     console.error('❌ Message sending failed:', error.response?.data || error.message);
+//     throw error;
+//   }
+// }
 
+// async function sendMessageWithButtons(userObj, commentId, message, title, link) {
+//   try {
+//     // console.log("=== DEBUG: sendMessageWithButtons ===");
+//     // console.log("👤 User object received:", userObj.name);
+//     // console.log("📋 Available page tokens:", userObj.pageTokens.map(p => p.pageId));
+    
+//     // Use the first page token from the user object
+//     const firstPage = userObj.pageTokens[0];
+//     if (!firstPage) {
+//       throw new Error('No page tokens available for this user');
+//     }
+    
+//     const pageId = firstPage.pageId;
+//     const pageToken = firstPage.token;
+    
+//     console.log("🔑 Using page:", firstPage.name, "ID:", pageId);
+    
+//     const response = await axios.post(
+//       `https://graph.facebook.com/v22.0/${pageId}/messages`,
+//       {
+//         recipient: { comment_id: commentId },
+//         message: {
+//           attachment: {
+//             type: "template",
+//             payload: {
+//               template_type: "button",
+//               text: message,
+//               buttons: [
+//                 {
+//                   type: "web_url",
+//                   url: link,
+//                   title: title
+//                 },
+//                 {
+//                   type: "web_url",
+//                   url: "https://WhatsApp.openinapp.co/Brainy_Voyage",
+//                   title: "Join WhatsApp"
+//                 },
+//                 {
+//                   type: "web_url",
+//                   url: "https://YouTube.openinapp.co/Brainy_Voyage",
+//                   title: "Subcribe Us"
+//                 }
+//               ]
+//             }
+//           }
+//         }
+//       },
+//       {
+//         params: { access_token: pageToken },
+//         timeout: 10000
+//       }
+//     );
+    
+//     console.log("✅ Message sent successfully");
+//     return response.data;
+//   } catch (error) {
+//     console.error('❌ Message sending failed:', error.response?.data || error.message);
+//     throw error;
+//   }
+// }
+
+async function sendMessageWithButtons(userParam, commentId, message, title, link) {
+  try {
+    let pageId, pageToken, pageName;
+
+    // Determine if userParam is a user object or page ID string
+    if (typeof userParam === 'object' && userParam.pageTokens) {
+      // Case 1: userParam is a USER OBJECT (from automated sending)
+      console.log("🔑 Automated sending - using user object");
+      const firstPage = userParam.pageTokens[0];
+      if (!firstPage) {
+        throw new Error('No page tokens available for this user');
+      }
+      pageId = firstPage.pageId;
+      pageToken = firstPage.token;
+      pageName = firstPage.name;
+    } else if (typeof userParam === 'string') {
+      // Case 2: userParam is a PAGE ID STRING (from UI)
+      console.log("🔑 UI sending - using page ID:", userParam);
+      const accInfo = await User.findOne(
+        { "pageTokens.pageId": userParam },
+        { "pageTokens.$": 1 }
+      );
+      
+      if (!accInfo || !accInfo.pageTokens || accInfo.pageTokens.length === 0) {
+        throw new Error(`No page found with ID: ${userParam}`);
+      }
+      
+      pageId = accInfo.pageTokens[0].pageId;
+      pageToken = accInfo.pageTokens[0].token;
+      pageName = accInfo.pageTokens[0].name;
+    } else {
+      throw new Error('Invalid parameter: expected user object or page ID string');
+    }
+
+    console.log("🔑 Using page:", pageName, "ID:", pageId);
+    
     const response = await axios.post(
-      `https://graph.facebook.com/v22.0/${user}/messages`,
+      `https://graph.facebook.com/v22.0/${pageId}/messages`,
       {
         recipient: { comment_id: commentId },
         message: {
@@ -651,10 +930,12 @@ async function sendMessageWithButtons(user, commentId, message, title, link) {
         }
       },
       {
-        params: { access_token: accInfo.pageTokens[0].token },
+        params: { access_token: pageToken },
         timeout: 10000
       }
     );
+    
+    console.log("✅ Message sent successfully");
     return response.data;
   } catch (error) {
     console.error('❌ Message sending failed:', error.response?.data || error.message);
@@ -663,14 +944,15 @@ async function sendMessageWithButtons(user, commentId, message, title, link) {
 }
 
 async function dispatchMessages(user) {
+  // console.log("User in dispatch msgs",user)
   try {
     console.log('🔍 Checking for pending messages...');
     const pendingComments = await Comment.find({ 
       msgSentStatus: 'p',
       retryCount: { $lt: 3 },
-      userId: user._id
+      // userId: user._id
     }).limit(20);
-
+    console.log("Pending comments:", pendingComments);
     if (pendingComments.length === 0) {
       console.log('ℹ️ No pending messages to process');
       return;
@@ -680,7 +962,7 @@ async function dispatchMessages(user) {
       try {
         const setting = await PostSetting.findOne({ 
           postId: comment.postId,
-          userId: user._id 
+          // userId: user._id 
         });
         
         if (!setting || !setting.keyword) {
@@ -1067,10 +1349,124 @@ app.get('/api/settings/:postId/:ID', async (req, res) => {
 
 
 // Add this near your other route declarations
+// app.post('/auth/facebook/callback', async (req, res) => {
+//   try {
+//     const { token } = req.body;
+    
+//     // Verify the token with Facebook
+//     const debugToken = await axios.get(`https://graph.facebook.com/debug_token`, {
+//       params: {
+//         input_token: token,
+//         access_token: `${FB_APP_ID}|${FB_APP_SECRET}`
+//       }
+//     });
+
+//     if (!debugToken.data.data.is_valid) {
+//       return res.status(401).json({ success: false, error: 'Invalid token' });
+//     }
+
+//     // Get user profile
+//     const profile = await axios.get(`https://graph.facebook.com/v22.0/me`, {
+//       params: {
+//         fields: 'id,name,picture{url}',
+//         access_token: token
+//       }
+//     });
+
+//     // Get long-lived token
+//     const longLivedToken = await axios.get(`https://graph.facebook.com/v22.0/oauth/access_token`, {
+//       params: {
+//         grant_type: 'fb_exchange_token',
+//         client_id: FB_APP_ID,
+//         client_secret: FB_APP_SECRET,
+//         fb_exchange_token: token
+//       }
+//     });
+
+
+//     const pages = await axios.get(`https://graph.facebook.com/v22.0/me/accounts`, {
+//       params: {
+//         access_token: longLivedToken.data.access_token
+//       }
+//     });
+
+//     // Step 2: Build an array of pages with access tokens
+//     const pageTokens = pages.data.data.map(page => ({
+//       pageId: page.id,
+//       token: page.access_token,
+//       name: page.name
+//     }));
+
+//     // Step 3: Loop over pages to fetch connected Instagram business accounts
+//     const instagram = [];
+
+//     for (const page of pageTokens) {
+//       try {
+//         const ig = await axios.get(`https://graph.facebook.com/v22.0/${page.pageId}`, {
+//           params: {
+//             fields: 'instagram_business_account{name,username,id}',  // <-- key fix
+//             access_token: page.token
+//           }
+//         });
+//         if (ig.data.instagram_business_account) {
+//           instagram.push({
+//             pageId: page.pageId,
+//             pageName: page.name,
+//             token: page.token,
+//             instagram: ig.data.instagram_business_account
+//           });
+//         }
+//       } catch (error) {
+//         console.error(`❌ Failed to fetch Instagram account for page ${page.name}:`, error.response?.data || error.message);
+//       }
+//     }
+//     // Create or update user in database
+
+//     const formattedIGAccounts = instagram.map(acc => ({
+//       id: acc.instagram?.id,
+//       username: acc.instagram?.username,
+//       pageId: acc.pageId
+//     }));
+//     const user = await User.findOneAndUpdate(
+//       { facebookId: profile.data.id },
+//       {
+//         name: profile.data.name,
+//         picture: profile.data.picture.data.url,
+//         email: profile.data.email,
+//         accessToken: token,
+//         longLivedToken: longLivedToken.data.access_token,
+//         pageTokens: pageTokens,
+//         instagramAccount: formattedIGAccounts
+//       },
+//       { upsert: true, new: true }
+//     );
+
+//     // Create session
+//     // req.session.userId = user._id;
+    
+//     res.json({ 
+//       success: true,
+//       user: {
+//         id: user._id,
+//         name: user.name,
+//         email: user.email
+//       }
+//     });
+
+    
+//   } catch (error) {
+//     console.error('Authentication error:', error);
+//     res.status(500).json({ success: false, error: 'Authentication failed' });
+//   }
+// });
+
+
 app.post('/auth/facebook/callback', async (req, res) => {
   try {
     const { token } = req.body;
     
+    console.log('🔐 Starting Facebook authentication...');
+
     // Verify the token with Facebook
     const debugToken = await axios.get(`https://graph.facebook.com/debug_token`, {
       params: {
@@ -1080,16 +1476,21 @@ app.post('/auth/facebook/callback', async (req, res) => {
     });
 
     if (!debugToken.data.data.is_valid) {
+      console.log('❌ Invalid Facebook token');
       return res.status(401).json({ success: false, error: 'Invalid token' });
     }
+
+    console.log('✅ Facebook token validated');
 
     // Get user profile
     const profile = await axios.get(`https://graph.facebook.com/v22.0/me`, {
       params: {
-        fields: 'id,name,picture{url}',
+        fields: 'id,name,picture{url},email',
         access_token: token
       }
     });
+
+    console.log('👤 User profile fetched:', profile.data.name);
 
     // Get long-lived token
     const longLivedToken = await axios.get(`https://graph.facebook.com/v22.0/oauth/access_token`, {
@@ -1101,31 +1502,38 @@ app.post('/auth/facebook/callback', async (req, res) => {
       }
     });
 
+    console.log('🔑 Long-lived token obtained');
 
+    // Get user pages
     const pages = await axios.get(`https://graph.facebook.com/v22.0/me/accounts`, {
       params: {
         access_token: longLivedToken.data.access_token
       }
     });
 
-    // Step 2: Build an array of pages with access tokens
+    console.log(`📄 Found ${pages.data.data.length} Facebook pages`);
+
+    // Build array of pages with access tokens
     const pageTokens = pages.data.data.map(page => ({
       pageId: page.id,
       token: page.access_token,
       name: page.name
+      // Note: autoSendMessages is NOT included here - it will be preserved from existing data
     }));
 
-    // Step 3: Loop over pages to fetch connected Instagram business accounts
+    // Loop over pages to fetch connected Instagram business accounts
     const instagram = [];
+    console.log('📸 Fetching Instagram accounts for pages...');
 
     for (const page of pageTokens) {
       try {
         const ig = await axios.get(`https://graph.facebook.com/v22.0/${page.pageId}`, {
           params: {
-            fields: 'instagram_business_account{name,username,id}',  // <-- key fix
+            fields: 'instagram_business_account{name,username,id}',
             access_token: page.token
           }
         });
+        
         if (ig.data.instagram_business_account) {
           instagram.push({
             pageId: page.pageId,
@@ -1133,48 +1541,110 @@ app.post('/auth/facebook/callback', async (req, res) => {
             token: page.token,
             instagram: ig.data.instagram_business_account
           });
+          console.log(`✅ Found Instagram: ${ig.data.instagram_business_account.username}`);
         }
       } catch (error) {
-        console.error(`❌ Failed to fetch Instagram account for page ${page.name}:`, error.response?.data || error.message);
+        console.error(`❌ Failed to fetch Instagram for page ${page.name}:`, error.response?.data || error.message);
       }
     }
-    // Create or update user in database
 
+    console.log(`📊 Found ${instagram.length} Instagram accounts`);
+
+    // Format Instagram accounts
     const formattedIGAccounts = instagram.map(acc => ({
       id: acc.instagram?.id,
       username: acc.instagram?.username,
       pageId: acc.pageId
     }));
+
+    // Find existing user to preserve autoSendMessages settings
+    const existingUser = await User.findOne({ facebookId: profile.data.id });
+    console.log(existingUser ? '🔄 Updating existing user' : '🆕 Creating new user');
+
+    let updatedPageTokens = pageTokens;
+    
+    // If user exists, merge the new page tokens with existing autoSendMessages settings
+    if (existingUser) {
+      updatedPageTokens = pageTokens.map(newPage => {
+        const existingPage = existingUser.pageTokens.find(
+          ep => ep.pageId === newPage.pageId
+        );
+        
+        // If page exists and has autoSendMessages setting, preserve it
+        if (existingPage && existingPage.autoSendMessages !== undefined) {
+          console.log(`💾 Preserving autoSendMessages: ${existingPage.autoSendMessages} for page ${newPage.name}`);
+          return {
+            ...newPage,
+            autoSendMessages: existingPage.autoSendMessages
+          };
+        }
+        
+        // New page or no existing setting - use default (false)
+        console.log(`⚙️ Setting autoSendMessages: false for new page ${newPage.name}`);
+        return {
+          ...newPage,
+          autoSendMessages: false
+        };
+      });
+    } else {
+      // New user - set all to default false
+      updatedPageTokens = pageTokens.map(page => ({
+        ...page,
+        autoSendMessages: false
+      }));
+      console.log('🎯 New user - all pages set to autoSendMessages: false');
+    }
+
+    // Create or update user in database
     const user = await User.findOneAndUpdate(
       { facebookId: profile.data.id },
       {
         name: profile.data.name,
-        picture: profile.data.picture.data.url,
+        picture: profile.data.picture?.data?.url || '',
         email: profile.data.email,
         accessToken: token,
         longLivedToken: longLivedToken.data.access_token,
-        pageTokens: pageTokens,
+        pageTokens: updatedPageTokens,
         instagramAccount: formattedIGAccounts
       },
-      { upsert: true, new: true }
+      { 
+        upsert: true, 
+        new: true,
+        runValidators: true
+      }
     );
 
-    // Create session
-    // req.session.userId = user._id;
-    
+    console.log('✅ User saved to database');
+
+    // Log autoSendMessages status for each page
+    user.pageTokens.forEach(page => {
+      console.log(`📋 Page: ${page.name} - autoSendMessages: ${page.autoSendMessages}`);
+    });
+
     res.json({ 
       success: true,
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        facebookId: user.facebookId,
+        pages: user.pageTokens.map(p => ({
+          id: p.pageId,
+          name: p.name,
+          autoSendMessages: p.autoSendMessages
+        }))
       }
     });
 
+    console.log('🎉 Authentication completed successfully');
     
   } catch (error) {
-    console.error('Authentication error:', error);
-    res.status(500).json({ success: false, error: 'Authentication failed' });
+    console.error('❌ Authentication error:', error.response?.data || error.message);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Authentication failed',
+      details: error.response?.data || error.message
+    });
   }
 });
 
@@ -1307,13 +1777,133 @@ const keepAlive = () => {
 };
 
 // Server management
+// function startScheduledJobs() {
+//   // Run for all active users
+//   const runForAllUsers = async () => {
+//     try {
+//       const users = await User.find();
+//       for (const user of users) {
+//         await fetchComments(user);
+//         await dispatchMessages(user);
+//       }
+//     } catch (err) {
+//       console.error('Scheduled job error:', err);
+//     }
+//   };
+
+//   // Initial run
+//   runForAllUsers().catch(console.error);
+
+//   // Scheduled runs
+//   setInterval(() => {
+//     runForAllUsers().catch(console.error);
+//   }, 5 * 60 * 1000); // Every 5 minutes
+// }
+
+
+// Working one for all users and their pages
+// function startScheduledJobs() {
+//   // Run for all active users
+//   const runForAllUsers = async () => {
+//     try {
+//       const users = await User.find();
+//       for (const user of users) {
+//         console.log(`👤 Processing user: ${user.name}`);
+        
+//         // Process each page this user has
+//         for (const page of user.pageTokens) {
+//           try {
+//             console.log(`📱 Processing page: ${page.name} (${page.pageId})`);
+            
+//             // Fetch comments for this specific page
+//             await fetchComments(page.pageId);
+//           } catch (pageErr) {
+//             console.error(`❌ Error processing page ${page.name}:`, pageErr.message);
+//           }
+//         }
+        
+//         // Dispatch messages for the user (uses user object)
+//         await dispatchMessages(user);
+//       }
+//     } catch (err) {
+//       console.error('Scheduled job error:', err);
+//     }
+//   };
+
+//   // Initial run
+//   runForAllUsers().catch(console.error);
+
+//   // Scheduled runs
+//   setInterval(() => {
+//     runForAllUsers().catch(console.error);
+//   }, 1 * 60 * 1000);
+// }
+
+
+// Using the auto send msg function for user and all pages to the user
+// function startScheduledJobs() {
+//   const runForAllUsers = async () => {
+//     try {
+//       // Only get users who have autoSendMessages enabled
+//       const users = await User.find({ autoSendMessages: true });
+      
+//       console.log(`👥 Found ${users.length} users with auto-send enabled`);
+      
+//       for (const user of users) {
+//         try {
+//           console.log(`🚀 Processing user: ${user.name} (Auto-send: ${user.autoSendMessages})`);
+          
+//           // Process all pages for this user
+//           for (const page of user.pageTokens) {
+//             try {
+//               console.log(`📱 Processing page: ${page.name}`);
+//               await fetchComments(page.pageId);
+//             } catch (pageErr) {
+//               console.error(`❌ Error processing page ${page.name}:`, pageErr.message);
+//             }
+//           }
+          
+//           await dispatchMessages(user);
+//           console.log(`✅ Completed processing for user: ${user.name}`);
+          
+//         } catch (userErr) {
+//           console.error(`❌ Error processing user ${user.name}:`, userErr);
+//         }
+//       }
+//     } catch (err) {
+//       console.error('Scheduled job error:', err);
+//     }
+//   };
+
+//   // Initial run
+//   runForAllUsers().catch(console.error);
+
+//   // Scheduled runs
+//   setInterval(() => {
+//     runForAllUsers().catch(console.error);
+//   }, 5 * 60 * 1000);
+// }
+
+
+// For pages having auto send enabled instead of users
 function startScheduledJobs() {
-  // Run for all active users
   const runForAllUsers = async () => {
     try {
-      const users = await User.find();
+      // Simple query - only get users who have auto-send enabled pages
+      const users = await User.find({
+        "pageTokens.autoSendMessages": true
+      });
+      
+      console.log(`⏰ Processing ${users.length} users with auto-send pages`);
+      
       for (const user of users) {
-        // await fetchComments(user);
+        // Filter pages at JavaScript level (cleaner code)
+        const enabledPages = user.pageTokens.filter(p => p.autoSendMessages);
+        
+        for (const page of enabledPages) {
+          await fetchComments(page.pageId);
+        }
+        
         await dispatchMessages(user);
       }
     } catch (err) {
@@ -1321,13 +1911,8 @@ function startScheduledJobs() {
     }
   };
 
-  // Initial run
   runForAllUsers().catch(console.error);
-
-  // Scheduled runs
-  setInterval(() => {
-    runForAllUsers().catch(console.error);
-  }, 5 * 60 * 1000); // Every 5 minutes
+  setInterval(runForAllUsers, 5 * 60 * 1000);
 }
 
 const server = app.listen(PORT, () => {
