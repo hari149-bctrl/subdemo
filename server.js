@@ -1738,17 +1738,40 @@ app.post('/api/retry/:commentId/:ID',  async (req, res) => {
 
 
 // Telegram Notification
+// async function sendTelegramNotification(message) {
+//   if (!TELEGRAM_BOT_TOKEN || !CHAT_ID) return;
+  
+//   try {
+//     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+//     await axios.post(url, {
+//       chat_id: CHAT_ID,
+//       text: message,
+//     });
+//   } catch (error) {
+//     console.error('Error sending message to Telegram:', error);
+//   }
+// }
+
+
 async function sendTelegramNotification(message) {
   if (!TELEGRAM_BOT_TOKEN || !CHAT_ID) return;
   
   try {
     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+    
     await axios.post(url, {
       chat_id: CHAT_ID,
       text: message,
+    }, {
+      timeout: 10000, // Add timeout to prevent hanging
     });
+    
   } catch (error) {
-    console.error('Error sending message to Telegram:', error);
+    console.error('Error sending message to Telegram:', {
+      code: error.code,
+      message: error.message,
+      // Don't log the full error stack to avoid noise
+    });
   }
 }
 
